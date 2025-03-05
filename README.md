@@ -51,6 +51,10 @@ The **Agent of All Agents API** is built to:
    ```
 
 ---
+## Test
+ ```bash
+python -m unittest tests/test_api.py
+ ```
 
 ## 📂 Code Structure
 
