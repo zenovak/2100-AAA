@@ -1,18 +1,1345 @@
 {
-    "write_sales_pitch": {
-        "module": "writing",
-        "function": "generate_sales_pitch"
+    
+        "movie-script": {
+          "url": "/editor/movie-script",
+          "multiPrompt": true,
+          "fields": [
+            {
+              "id": "genre",
+              "label": "Genre",
+              "type": "select",
+              "options": [
+                "Action",
+                "Drama",
+                "Comedy",
+                "Science Fiction",
+                "Horror",
+                "Romance",
+                "Thriller",
+                "Adventure",
+                "Mystery",
+                "Fantasy"
+              ]
+            },
+            {
+              "id": "title",
+              "label": "Movie Title",
+              "type": "text"
+            },
+            {
+              "id": "logline",
+              "label": "Logline",
+              "type": "text"
+            },
+            {
+              "id": "setting",
+              "label": "Setting/Time Period",
+              "type": "text"
+            },
+            {
+              "id": "protagonist",
+              "label": "Main Character",
+              "type": "text"
+            },
+            {
+              "id": "conflict",
+              "label": "Main Conflict",
+              "type": "text"
+            },
+            {
+              "id": "tone",
+              "label": "Tone",
+              "type": "select",
+              "options": [
+                "Dark",
+                "Light-hearted",
+                "Suspenseful",
+                "Comedic",
+                "Dramatic",
+                "Satirical",
+                "Nostalgic",
+                "Gritty"
+              ]
+            },
+            {
+              "id": "format",
+              "label": "Script Format",
+              "type": "select",
+              "options": [
+                "Standard Hollywood",
+                "BBC",
+                "Stageplay",
+                "Treatment"
+              ]
+            },
+            {
+              "id": "length",
+              "label": "Target Length",
+              "type": "select",
+              "options": [
+                "Short Film (15-30 pages)",
+                "Feature Film (90-120 pages)",
+                "Extended Feature (120+ pages)"
+              ]
+            }
+          ],
+          "defaults": {
+            "genre": "Drama",
+            "title": "",
+            "logline": "",
+            "setting": "",
+            "protagonist": "",
+            "conflict": "",
+            "tone": "Dramatic",
+            "format": "Standard Hollywood",
+            "length": "Feature Film (90-120 pages)"
+          },
+          "promptChain": [
+            {
+              "id": "synopsis",
+              "label": "Synopsis",
+              "system": "You are a story development expert creating a synopsis for a {genre} film with a {tone} tone.",
+              "user": "Write a synopsis for '{title}' based on the logline: {logline}\nSetting: {setting}\nProtagonist: {protagonist}\nMain Conflict: {conflict}",
+              "format": "Synopsis:\n{content}"
+            },
+            {
+              "id": "characters",
+              "label": "Character Development",
+              "system": "You are a character development specialist for {genre} films.",
+              "user": "Develop the main characters for '{title}'.\nInclude:\n- Protagonist: {protagonist}\n- Antagonist\n- Supporting characters\n\nBased on synopsis:\n{prevOutput}",
+              "format": "Character Profiles:\n{content}"
+            },
+            {
+              "id": "outline",
+              "label": "Scene Outline",
+              "system": "You are a screenplay structuralist creating an outline for a {length} {genre} film.",
+              "user": "Create a detailed scene-by-scene outline following three-act structure.\nTitle: {title}\nTone: {tone}\n\nBased on:\n{prevOutput}",
+              "format": "Scene Outline:\n{content}"
+            },
+            {
+              "id": "actOne",
+              "label": "Act One",
+              "system": "You are a screenwriter writing Act One in {format} format for a {genre} film.",
+              "user": "Write Act One of '{title}' including setup, inciting incident, and first plot point.\nFollow {tone} tone and proper screenplay formatting.\n\nBased on outline:\n{prevOutput}",
+              "format": "ACT ONE:\n{content}"
+            },
+            {
+              "id": "actTwo",
+              "label": "Act Two",
+              "system": "You are a screenwriter writing Act Two in {format} format for a {genre} film.",
+              "user": "Write Act Two of '{title}' including rising action, midpoint, and complications.\nMaintain {tone} tone and proper formatting.\n\nPrevious content:\n{prevOutput}",
+              "format": "ACT TWO:\n{content}"
+            },
+            {
+              "id": "actThree",
+              "label": "Act Three",
+              "system": "You are a screenwriter writing Act Three in {format} format for a {genre} film.",
+              "user": "Write Act Three of '{title}' including climax and resolution.\nMaintain {tone} tone and proper formatting.\n\nPrevious content:\n{prevOutput}",
+              "format": "ACT THREE:\n{content}"
+            },
+            {
+              "id": "dialogue",
+              "label": "Dialogue Polish",
+              "system": "You are a dialogue specialist polishing conversations for {genre} films with {tone} tone.",
+              "user": "Review and enhance key dialogue moments throughout the script. Ensure character voices are distinct and consistent.",
+              "format": "Dialogue Revisions:\n{content}"
+            }
+          ],
+          "typeSpecificPrompts": {
+            "Action": {
+              "additional": [
+                {
+                  "id": "actionSequences",
+                  "label": "Action Sequences",
+                  "system": "You are an action sequence specialist.",
+                  "user": "Develop detailed action sequences for key moments in the script.",
+                  "format": "Action Sequences:\n{content}"
+                }
+              ]
+            },
+            "Science Fiction": {
+              "additional": [
+                {
+                  "id": "worldbuilding",
+                  "label": "World Building",
+                  "system": "You are a sci-fi world-building expert.",
+                  "user": "Create detailed world-building elements and technology descriptions.",
+                  "format": "World Building:\n{content}"
+                }
+              ]
+            },
+            "Mystery": {
+              "additional": [
+                {
+                  "id": "clues",
+                  "label": "Mystery Elements",
+                  "system": "You are a mystery plot specialist.",
+                  "user": "Develop the mystery elements, including clues, red herrings, and reveals.",
+                  "format": "Mystery Elements:\n{content}"
+                }
+              ]
+            }
+          }
+        }
+      ,
+        "newsletter": {
+          "url": "/editor/newsletter",
+          "multiPrompt": true,
+          "fields": [
+            {
+              "id": "newsletterType",
+              "label": "Newsletter Type",
+              "type": "select",
+              "options": [
+                "Company Update",
+                "Industry News",
+                "Product Focused",
+                "Educational Content",
+                "Community Update",
+                "Market Analysis",
+                "Tech Digest",
+                "Personal Brand"
+              ]
+            },
+            {
+              "id": "brand",
+              "label": "Brand/Company Name",
+              "type": "text"
+            },
+            {
+              "id": "audience",
+              "label": "Target Audience",
+              "type": "text"
+            },
+            {
+              "id": "style",
+              "label": "Writing Style",
+              "type": "select",
+              "options": [
+                "Professional",
+                "Casual",
+                "Technical",
+                "Conversational",
+                "Educational",
+                "Entertainment"
+              ]
+            },
+            {
+              "id": "format",
+              "label": "Format",
+              "type": "select",
+              "options": [
+                "Standard",
+                "Digest",
+                "Curated List",
+                "Deep Dive",
+                "News Roundup"
+              ]
+            },
+            {
+              "id": "length",
+              "label": "Length",
+              "type": "select",
+              "options": [
+                "Brief (300-500 words)",
+                "Standard (500-800 words)",
+                "Detailed (800-1200 words)",
+                "Comprehensive (1200+ words)"
+              ]
+            },
+            {
+              "id": "mainTopic",
+              "label": "Main Topic/Theme",
+              "type": "text"
+            },
+            {
+              "id": "useEmoji",
+              "label": "Use Emojis",
+              "type": "select",
+              "options": ["Yes", "No"]
+            },
+            {
+              "id": "includeCallToAction",
+              "label": "Include Call-to-Action",
+              "type": "select",
+              "options": ["Yes", "No"]
+            }
+          ],
+          "defaults": {
+            "newsletterType": "Company Update",
+            "brand": "",
+            "audience": "",
+            "style": "Professional",
+            "format": "Standard",
+            "length": "Standard (500-800 words)",
+            "mainTopic": "",
+            "useEmoji": "No",
+            "includeCallToAction": "Yes"
+          },
+          "promptChain": [
+            {
+              "id": "subject",
+              "label": "Subject Line & Preview",
+              "system": "You are an email marketing expert creating subject lines. Write in a {style} style. {useEmoji, select, Yes {Include relevant emojis} No {Don't use emojis}}",
+              "user": "Create 3 engaging subject line options and a preview text for a {newsletterType} newsletter about {mainTopic} for {brand}. Target audience: {audience}",
+              "format": "Subject Lines and Preview:\n{content}"
+            },
+            {
+              "id": "introduction",
+              "label": "Introduction",
+              "system": "You are writing newsletter introductions in a {style} style for {brand}.",
+              "user": "Write an engaging introduction for a {length} {newsletterType} newsletter about {mainTopic}. Make it relevant for {audience}.",
+              "format": "Introduction:\n{content}"
+            },
+            {
+              "id": "mainContent",
+              "label": "Main Content",
+              "system": "You are creating the main content for a {format} newsletter in {style} style.",
+              "user": "Write the main content for {brand}'s newsletter about {mainTopic}. Follow {format} format guidelines and target {length}.\n\nPrevious sections:\n{prevOutput}",
+              "format": "Main Content:\n{content}"
+            },
+            {
+              "id": "highlights",
+              "label": "Key Highlights/Sections",
+              "system": "You are organizing key points for a {newsletterType} newsletter.",
+              "user": "Create distinct sections or highlights for this {format} newsletter about {mainTopic}. Make it engaging for {audience}.",
+              "format": "Key Highlights:\n{content}"
+            },
+            {
+              "id": "callToAction",
+              "label": "Call-to-Action",
+              "system": "You are crafting compelling CTAs for newsletters.",
+              "user": "{includeCallToAction, select, Yes {Create strategic call-to-action sections that align with {brand}'s objectives and {mainTopic}} No {Skip CTA generation}}",
+              "format": "Call-to-Action:\n{content}"
+            },
+            {
+              "id": "closing",
+              "label": "Closing Section",
+              "system": "You are writing newsletter closings in {style} style.",
+              "user": "Write a closing section that wraps up the newsletter and maintains engagement. Brand: {brand}, Topic: {mainTopic}",
+              "format": "Closing:\n{content}"
+            }
+          ],
+          "typeSpecificPrompts": {
+            "Company Update": {
+              "additional": [
+                {
+                  "id": "achievements",
+                  "label": "Company Achievements",
+                  "system": "You are highlighting company achievements and milestones.",
+                  "user": "Create a section highlighting recent achievements and milestones for {brand}.",
+                  "format": "Achievements Section:\n{content}"
+                }
+              ]
+            },
+            "Industry News": {
+              "additional": [
+                {
+                  "id": "trends",
+                  "label": "Trend Analysis",
+                  "system": "You are analyzing industry trends and developments.",
+                  "user": "Provide analysis of key industry trends related to {mainTopic}.",
+                  "format": "Trend Analysis:\n{content}"
+                }
+              ]
+            },
+            "Product Focused": {
+              "additional": [
+                {
+                  "id": "features",
+                  "label": "Feature Spotlight",
+                  "system": "You are showcasing product features and benefits.",
+                  "user": "Create a feature spotlight section highlighting key product aspects for {brand}.",
+                  "format": "Feature Spotlight:\n{content}"
+                }
+              ]
+            },
+            "Educational Content": {
+              "additional": [
+                {
+                  "id": "tips",
+                  "label": "Tips & Best Practices",
+                  "system": "You are sharing educational tips and best practices.",
+                  "user": "Create a section with practical tips and best practices related to {mainTopic}.",
+                  "format": "Tips Section:\n{content}"
+                }
+              ]
+            }
+          }
+        }
+      ,
+        "scenario": {
+          "url": "/editor/scenario",
+          "multiPrompt": true,
+          "fields": [
+            {
+              "id": "scenarioType",
+              "label": "Scenario Type",
+              "type": "select",
+              "options": [
+                "Business Case",
+                "Training Simulation",
+                "Risk Assessment",
+                "Strategic Planning",
+                "Crisis Management",
+                "User Story",
+                "Market Analysis",
+                "Product Launch",
+                "Customer Journey"
+              ]
+            },
+            {
+              "id": "industry",
+              "label": "Industry/Context",
+              "type": "text"
+            },
+            {
+              "id": "mainActor",
+              "label": "Main Actor/Stakeholder",
+              "type": "text"
+            },
+            {
+              "id": "objective",
+              "label": "Scenario Objective",
+              "type": "text"
+            },
+            {
+              "id": "complexity",
+              "label": "Complexity Level",
+              "type": "select",
+              "options": [
+                "Basic",
+                "Intermediate",
+                "Complex",
+                "Advanced"
+              ]
+            },
+            {
+              "id": "timeframe",
+              "label": "Time Frame",
+              "type": "select",
+              "options": [
+                "Immediate (Days)",
+                "Short-term (Weeks)",
+                "Medium-term (Months)",
+                "Long-term (Years)"
+              ]
+            },
+            {
+              "id": "variables",
+              "label": "Number of Variables",
+              "type": "select",
+              "options": [
+                "Few (2-3)",
+                "Moderate (4-6)",
+                "Many (7-10)",
+                "Complex (10+)"
+              ]
+            },
+            {
+              "id": "includeActions",
+              "label": "Include Action Points",
+              "type": "select",
+              "options": ["Yes", "No"]
+            }
+          ],
+          "defaults": {
+            "scenarioType": "Business Case",
+            "industry": "",
+            "mainActor": "",
+            "objective": "",
+            "complexity": "Intermediate",
+            "timeframe": "Medium-term (Months)",
+            "variables": "Moderate (4-6)",
+            "includeActions": "Yes"
+          },
+          "promptChain": [
+            {
+              "id": "context",
+              "label": "Scenario Context",
+              "system": "You are a scenario planning expert creating a {scenarioType} scenario with {complexity} complexity.",
+              "user": "Create the initial context for a scenario in the {industry} industry.\nMain stakeholder: {mainActor}\nObjective: {objective}\nTimeframe: {timeframe}",
+              "format": "Context:\n{content}"
+            },
+            {
+              "id": "variables",
+              "label": "Key Variables",
+              "system": "You are identifying key variables for a {scenarioType} scenario.",
+              "user": "Identify and describe {variables} key variables that will influence this scenario.\nContext from previous:\n{prevOutput}",
+              "format": "Key Variables:\n{content}"
+            },
+            {
+              "id": "currentState",
+              "label": "Current State Analysis",
+              "system": "You are analyzing the current state for a {scenarioType} scenario.",
+              "user": "Describe the current state regarding:\n- Stakeholder situation\n- Market conditions\n- Available resources\n- Existing challenges\n\nBased on:\n{prevOutput}",
+              "format": "Current State:\n{content}"
+            },
+            {
+              "id": "scenarios",
+              "label": "Scenario Development",
+              "system": "You are developing detailed scenarios with {complexity} complexity.",
+              "user": "Develop three possible scenarios (Best Case, Expected Case, Worst Case) considering the variables and current state.\n\nPrevious analysis:\n{prevOutput}",
+              "format": "Scenarios:\n{content}"
+            },
+            {
+              "id": "implications",
+              "label": "Implications",
+              "system": "You are analyzing implications for a {scenarioType} scenario.",
+              "user": "Analyze the implications of each scenario for:\n- Stakeholders\n- Resources\n- Timeline\n- Risks\n- Opportunities\n\nScenarios:\n{prevOutput}",
+              "format": "Implications:\n{content}"
+            },
+            {
+              "id": "indicators",
+              "label": "Key Indicators",
+              "system": "You are identifying indicators for a {scenarioType} scenario.",
+              "user": "Define key indicators and triggers that would signal the unfolding of each scenario.\n\nBased on:\n{prevOutput}",
+              "format": "Key Indicators:\n{content}"
+            },
+            {
+              "id": "actions",
+              "label": "Action Points",
+              "system": "You are creating action plans for a {scenarioType} scenario.",
+              "user": "{includeActions, select, Yes {Create specific action points for each scenario, including:\n- Immediate actions\n- Contingency plans\n- Resource requirements\n- Timeline} No {Summarize key considerations for each scenario}}",
+              "format": "Action Points:\n{content}"
+            },
+            {
+              "id": "monitoring",
+              "label": "Monitoring Framework",
+              "system": "You are designing a monitoring framework for a {scenarioType} scenario.",
+              "user": "Create a monitoring framework to track the evolution of this scenario over the {timeframe} timeframe.\n\nConsider:\n{prevOutput}",
+              "format": "Monitoring Framework:\n{content}"
+            }
+          ],
+          "typeSpecificPrompts": {
+            "Business Case": {
+              "additional": [
+                {
+                  "id": "financialImpact",
+                  "label": "Financial Impact",
+                  "system": "You are analyzing financial implications of business scenarios.",
+                  "user": "Analyze potential financial impacts for each scenario, including costs, benefits, and ROI considerations.",
+                  "format": "Financial Analysis:\n{content}"
+                }
+              ]
+            },
+            "Risk Assessment": {
+              "additional": [
+                {
+                  "id": "riskMatrix",
+                  "label": "Risk Matrix",
+                  "system": "You are creating a risk assessment matrix.",
+                  "user": "Create a risk matrix showing likelihood and impact for identified risks in each scenario.",
+                  "format": "Risk Matrix:\n{content}"
+                }
+              ]
+            },
+            "Customer Journey": {
+              "additional": [
+                {
+                  "id": "touchpoints",
+                  "label": "Customer Touchpoints",
+                  "system": "You are mapping customer journey touchpoints.",
+                  "user": "Map key customer touchpoints and experiences for each scenario.",
+                  "format": "Touchpoint Analysis:\n{content}"
+                }
+              ]
+            }
+          }
+        }
+      ,
+        "whitepaper": {
+          "url": "/editor/whitepaper",
+          "multiPrompt": true,
+          "fields": [
+            {
+              "id": "paperType",
+              "label": "Whitepaper Type",
+              "type": "select",
+              "options": [
+                "Scientific Research",
+                "Crypto/Blockchain",
+                "B2B Solution",
+                "Market Research",
+                "Technical Research"
+              ]
+            },
+            {
+              "id": "topic",
+              "label": "Main Topic",
+              "type": "text"
+            },
+            {
+              "id": "organization",
+              "label": "Organization Name",
+              "type": "text"
+            },
+            {
+              "id": "audience",
+              "label": "Target Audience",
+              "type": "select",
+              "options": [
+                "Technical Experts",
+                "Business Decision Makers",
+                "Investors",
+                "Researchers",
+                "Industry Professionals"
+              ]
+            },
+            {
+              "id": "style",
+              "label": "Writing Style",
+              "type": "select",
+              "options": [
+                "Academic",
+                "Technical",
+                "Business Professional",
+                "Research-Focused",
+                "Marketing-Oriented"
+              ]
+            },
+            {
+              "id": "length",
+              "label": "Target Length",
+              "type": "select",
+              "options": [
+                "Brief (5-10 pages)",
+                "Standard (10-20 pages)",
+                "Comprehensive (20-30 pages)",
+                "Extended (30+ pages)"
+              ]
+            },
+            {
+              "id": "includeCaseStudies",
+              "label": "Include Case Studies",
+              "type": "select",
+              "options": ["Yes", "No"]
+            },
+            {
+              "id": "dataVisualization",
+              "label": "Data Visualization",
+              "type": "select",
+              "options": ["Extensive", "Moderate", "Minimal", "None"]
+            }
+          ],
+          "defaults": {
+            "paperType": "B2B Solution",
+            "topic": "",
+            "organization": "",
+            "audience": "Business Decision Makers",
+            "style": "Business Professional",
+            "length": "Standard (10-20 pages)",
+            "includeCaseStudies": "Yes",
+            "dataVisualization": "Moderate"
+          },
+          "promptChain": [
+            {
+              "id": "executiveSummary",
+              "label": "Executive Summary",
+              "system": "You are writing a {paperType} whitepaper. Create an executive summary that follows industry standards for {audience}.",
+              "user": "Write an executive summary for a whitepaper about {topic} by {organization}. Style: {style}",
+              "format": "Executive Summary:\n{content}"
+            },
+            {
+              "id": "marketAnalysis",
+              "label": "Market Analysis",
+              "system": "You are a market analyst specializing in {paperType} whitepapers.",
+              "user": "Create a market analysis section covering:\n- Market overview\n- Current challenges\n- Opportunity analysis\n- Market trends\n\nContext: {topic}\nOrganization: {organization}\nAudience: {audience}",
+              "format": "Market Analysis:\n{content}"
+            },
+            {
+              "id": "methodology",
+              "label": "Methodology/Approach",
+              "system": "You are a technical writer explaining complex methodologies for {audience}.",
+              "user": "Detail the methodology/approach for this {paperType} whitepaper about {topic}. Include research methods, data collection, and analysis approach.",
+              "format": "Methodology:\n{content}"
+            },
+            {
+              "id": "technicalDetails",
+              "label": "Technical Details",
+              "system": "You are a technical expert writing for {audience} in a {style} style.",
+              "user": "Provide detailed technical information for this {paperType} whitepaper about {topic}. Include specifications, architectures, or frameworks as appropriate.",
+              "format": "Technical Details:\n{content}"
+            },
+            {
+              "id": "implementation",
+              "label": "Implementation/Solutions",
+              "system": "You are describing implementation strategies for {audience}.",
+              "user": "Detail the implementation or solution approach for {topic}. {includeCaseStudies, select, Yes {Include placeholder case study examples} No {Focus on theoretical implementation}}",
+              "format": "Implementation Strategy:\n{content}"
+            },
+            {
+              "id": "results",
+              "label": "Results and Benefits",
+              "system": "You are writing about outcomes and benefits for a {paperType} whitepaper.",
+              "user": "Describe the results, benefits, and potential impact of {topic}. Include relevant metrics and success indicators for {audience}.",
+              "format": "Results and Benefits:\n{content}"
+            },
+            {
+              "id": "recommendations",
+              "label": "Recommendations",
+              "system": "You are providing strategic recommendations in a {paperType} whitepaper.",
+              "user": "Provide strategic recommendations based on the analysis of {topic}. Target these recommendations for {audience}.",
+              "format": "Recommendations:\n{content}"
+            },
+            {
+              "id": "futureOutlook",
+              "label": "Future Outlook",
+              "system": "You are writing about future implications for a {paperType} whitepaper.",
+              "user": "Discuss future implications, trends, and potential developments related to {topic}. Consider the perspective of {audience}.",
+              "format": "Future Outlook:\n{content}"
+            }
+          ],
+          "typeSpecificPrompts": {
+            "Scientific Research": {
+              "additional": [
+                {
+                  "id": "literatureReview",
+                  "label": "Literature Review",
+                  "system": "You are conducting a scientific literature review.",
+                  "user": "Create a comprehensive literature review section for the research on {topic}.",
+                  "format": "Literature Review:\n{content}"
+                },
+                {
+                  "id": "experimentalDesign",
+                  "label": "Experimental Design",
+                  "system": "You are describing scientific experimental procedures.",
+                  "user": "Detail the experimental design and procedures used in this research about {topic}.",
+                  "format": "Experimental Design:\n{content}"
+                }
+              ]
+            },
+            "Crypto/Blockchain": {
+              "additional": [
+                {
+                  "id": "tokenomics",
+                  "label": "Tokenomics",
+                  "system": "You are explaining tokenomics and economic models.",
+                  "user": "Detail the tokenomics and economic model for {topic}.",
+                  "format": "Tokenomics:\n{content}"
+                },
+                {
+                  "id": "consensus",
+                  "label": "Consensus Mechanism",
+                  "system": "You are describing blockchain consensus mechanisms.",
+                  "user": "Explain the consensus mechanism and technical architecture for {topic}.",
+                  "format": "Consensus Mechanism:\n{content}"
+                }
+              ]
+            },
+            "B2B Solution": {
+              "additional": [
+                {
+                  "id": "roi",
+                  "label": "ROI Analysis",
+                  "system": "You are conducting ROI analysis for B2B solutions.",
+                  "user": "Create an ROI analysis section for {topic}, targeting {audience}.",
+                  "format": "ROI Analysis:\n{content}"
+                }
+              ]
+            }
+          }
+        }
+      ,
+    
+        "poem": {
+          "url": "/editor/poem",
+          "multiPrompt": true,
+          "fields": [
+            {
+              "id": "poemType",
+              "label": "Poem Type",
+              "type": "select",
+              "options": [
+                "Sonnet",
+                "Haiku",
+                "Free Verse",
+                "Limerick",
+                "Ballad",
+                "Ode",
+                "Villanelle",
+                "Tanka",
+                "Cinquain",
+                "Blank Verse"
+              ]
+            },
+            {
+              "id": "theme",
+              "label": "Theme/Subject",
+              "type": "text"
+            },
+            {
+              "id": "mood",
+              "label": "Mood",
+              "type": "select",
+              "options": [
+                "Romantic",
+                "Melancholic",
+                "Joyful",
+                "Contemplative",
+                "Dark",
+                "Hopeful",
+                "Nostalgic",
+                "Whimsical"
+              ]
+            },
+            {
+              "id": "style",
+              "label": "Writing Style",
+              "type": "select",
+              "options": [
+                "Classical",
+                "Modern",
+                "Contemporary",
+                "Experimental",
+                "Minimalist",
+                "Gothic",
+                "Romantic Era",
+                "Beat Poetry"
+              ]
+            },
+            {
+              "id": "useMetaphor",
+              "label": "Use Metaphors",
+              "type": "select",
+              "options": ["Extensive", "Moderate", "Minimal", "None"]
+            },
+            {
+              "id": "useRhyme",
+              "label": "Rhyming Scheme",
+              "type": "select",
+              "options": ["None", "ABAB", "AABB", "Free Rhyme", "Internal Rhyme"]
+            },
+            {
+              "id": "language",
+              "label": "Language Level",
+              "type": "select",
+              "options": [
+                "Simple",
+                "Moderate",
+                "Complex",
+                "Archaic",
+                "Contemporary"
+              ]
+            }
+          ],
+          "defaults": {
+            "poemType": "Free Verse",
+            "theme": "",
+            "mood": "Contemplative",
+            "style": "Modern",
+            "useMetaphor": "Moderate",
+            "useRhyme": "None",
+            "language": "Moderate"
+          },
+          "promptChain": [
+            {
+              "id": "structure",
+              "label": "Poem Structure",
+              "system": "You are a poetry expert specializing in {poemType}. Plan a poem that follows the traditional rules and structure of this form.",
+              "user": "Plan the structure for a {poemType} about {theme} with a {mood} mood.\nStyle: {style}\nMetaphor usage: {useMetaphor}\nRhyme scheme: {useRhyme}\nLanguage level: {language}",
+              "format": "Poem Structure:\n{content}"
+            },
+            {
+              "id": "imagery",
+              "label": "Imagery Development",
+              "system": "You are a master of poetic imagery. Develop the key images and symbols for this poem.",
+              "user": "Create a set of cohesive images and symbols for a {mood} poem about {theme}.\nStyle: {style}\nMetaphor level: {useMetaphor}\n\nStructure context:\n{prevOutput}",
+              "format": "Imagery Elements:\n{content}"
+            },
+            {
+              "id": "draft",
+              "label": "Initial Draft",
+              "system": "You are a poet writing in the {style} style. Create a {poemType} that adheres to all traditional form requirements.",
+              "user": "Write a {poemType} using the planned structure and imagery.\nTheme: {theme}\nMood: {mood}\nRhyme scheme: {useRhyme}\nLanguage level: {language}\n\nUse these imagery elements:\n{prevOutput}",
+              "format": "First Draft:\n{content}"
+            },
+            {
+              "id": "revision",
+              "label": "Refined Version",
+              "system": "You are a poetry editor refining the work while maintaining the integrity of the {poemType} form.",
+              "user": "Refine this draft, ensuring perfect adherence to {poemType} structure, {mood} mood, and {style} style conventions.\n\nOriginal draft:\n{prevOutput}",
+              "format": "Final Poem:\n{content}"
+            },
+            {
+              "id": "analysis",
+              "label": "Poem Analysis",
+              "system": "You are a poetry analyst. Provide insight into the technical and artistic elements of this poem.",
+              "user": "Analyze the final poem, explaining its:\n- Structure and form\n- Imagery and symbolism\n- Mood and tone\n- Technical elements\n\nPoem:\n{prevOutput}",
+              "format": "Analysis:\n{content}"
+            }
+          ]
+        }
+      ,
+        "article": {
+          "url": "/editor/article",
+          "multiPrompt": true,
+          "fields": [
+            {
+              "id": "publicationType",
+              "label": "Publication Style",
+              "type": "select",
+              "options": [
+                "Forbes",
+                "Newspaper",
+                "Medium",
+                "TechCrunch",
+                "Harvard Business Review",
+                "Scientific Journal",
+                "Buzzfeed",
+                "The Economist",
+                "Wired",
+                "Vice"
+              ]
+            },
+            {
+              "id": "topic",
+              "label": "Main Topic",
+              "type": "text"
+            },
+            {
+              "id": "industry",
+              "label": "Industry/Field",
+              "type": "text"
+            },
+            {
+              "id": "audience",
+              "label": "Target Audience",
+              "type": "text"
+            },
+            {
+              "id": "wordCount",
+              "label": "Desired Length",
+              "type": "select",
+              "options": [
+                "Short (500-800 words)",
+                "Medium (800-1200 words)",
+                "Long (1200-2000 words)",
+                "Feature (2000+ words)"
+              ]
+            },
+            {
+              "id": "includeQuotes",
+              "label": "Include Quote Placeholders",
+              "type": "select",
+              "options": ["Yes", "No"]
+            },
+            {
+              "id": "includeStats",
+              "label": "Include Statistics Placeholders",
+              "type": "select",
+              "options": ["Yes", "No"]
+            },
+            {
+              "id": "angle",
+              "label": "Article Angle",
+              "type": "select",
+              "options": [
+                "Analysis",
+                "Opinion",
+                "Investigation",
+                "News Report",
+                "Feature Story",
+                "How-to Guide",
+                "Review",
+                "Interview"
+              ]
+            }
+          ],
+          "defaults": {
+            "publicationType": "Medium",
+            "topic": "",
+            "industry": "",
+            "audience": "",
+            "wordCount": "Medium (800-1200 words)",
+            "includeQuotes": "Yes",
+            "includeStats": "Yes",
+            "angle": "Analysis"
+          },
+          "promptChain": [
+            {
+              "id": "outline",
+              "label": "Article Outline",
+              "system": "You are a {publicationType}-style content strategist. Create an outline for a {angle} article about {topic}, following {publicationType}'s typical structure and formatting.",
+              "user": "Create a detailed outline for a {wordCount} article.\nTopic: {topic}\nIndustry: {industry}\nAudience: {audience}\n{includeQuotes, select, Yes {Include placeholders for expert quotes} No {Skip quotes}}\n{includeStats, select, Yes {Include placeholders for statistics} No {Skip statistics}}",
+              "format": "Article Outline:\n{content}"
+            },
+            {
+              "id": "headline",
+              "label": "Headlines and Subheadlines",
+              "system": "You are a {publicationType} headline writer. Create attention-grabbing headlines in the signature style of {publicationType}.",
+              "user": "Write a main headline and 3 alternative headlines for this {angle} about {topic}. Include subheadlines if appropriate for {publicationType}.\n\nContext from outline:\n{prevOutput}",
+              "format": "Headlines:\n{content}"
+            },
+            {
+              "id": "introduction",
+              "label": "Introduction",
+              "system": "You are writing the introduction for a {publicationType} article. Match their voice, style, and typical opening approach.",
+              "user": "Write a compelling introduction for this {angle} about {topic}. Length should be appropriate for a {wordCount} article.\n\nContext:\nHeadlines: {prevOutput}\nAudience: {audience}",
+              "format": "Introduction:\n{content}"
+            },
+            {
+              "id": "mainBody",
+              "label": "Main Body",
+              "system": "You are writing the main body of a {publicationType} article. Follow their typical paragraph structure, transition style, and depth of analysis.",
+              "user": "Write the main body sections for this {angle} about {topic}. Target length: {wordCount}.\n\nUse the following outline:\n{prevOutput}\n\n{includeQuotes, select, Yes {Include [EXPERT QUOTE] placeholders where appropriate} No {}}\n{includeStats, select, Yes {Include [STATISTIC] placeholders where relevant} No {}}",
+              "format": "Main Body:\n{content}"
+            },
+            {
+              "id": "conclusion",
+              "label": "Conclusion",
+              "system": "You are writing the conclusion for a {publicationType} article. Match their typical closing style and call-to-action approach.",
+              "user": "Write a conclusion for this {angle} about {topic}. Wrap up the main points and end with {publicationType}'s signature style.",
+              "format": "Conclusion:\n{content}"
+            },
+            {
+              "id": "metadata",
+              "label": "Article Metadata",
+              "system": "Generate appropriate metadata for a {publicationType} article.",
+              "user": "Create metadata including:\n- SEO title\n- Meta description\n- Tags/Categories\n- Social media sharing text\n\nArticle context:\nTopic: {topic}\nIndustry: {industry}\nAngle: {angle}",
+              "format": "Metadata:\n{content}"
+            }
+          ]
+        }
+      ,
+        "caption": {
+          "url": "/editor/caption",
+          "multiPrompt": true,
+          "fields": [
+            {
+              "id": "platform",
+              "label": "Platform",
+              "type": "select",
+              "options": ["Instagram", "LinkedIn", "TikTok", "Facebook", "YouTube"]
+            },
+            {
+              "id": "contentType",
+              "label": "Content Type",
+              "type": "select",
+              "options": ["Photo", "Video", "Carousel", "Reel", "Story"]
+            },
+            {
+              "id": "topic",
+              "label": "Topic/Subject",
+              "type": "text"
+            },
+            {
+              "id": "brand",
+              "label": "Brand/Creator Name",
+              "type": "text"
+            },
+            {
+              "id": "tone",
+              "label": "Tone",
+              "type": "select",
+              "options": ["Professional", "Casual", "Humorous", "Inspirational", "Educational"]
+            },
+            {
+              "id": "useEmoji",
+              "label": "Use Emoji",
+              "type": "select",
+              "options": ["Yes", "No"]
+            },
+            {
+              "id": "useHashtags",
+              "label": "Include Hashtags",
+              "type": "select",
+              "options": ["Yes", "No"]
+            },
+            {
+              "id": "callToAction",
+              "label": "Call to Action",
+              "type": "text"
+            }
+          ],
+          "defaults": {
+            "platform": "Instagram",
+            "contentType": "Photo",
+            "topic": "",
+            "brand": "",
+            "tone": "Professional",
+            "useEmoji": "Yes",
+            "useHashtags": "Yes",
+            "callToAction": ""
+          },
+          "promptChain": [
+            {
+              "id": "mainCaption",
+              "label": "Main Caption",
+              "system": "You are a social media expert crafting captions for {platform}. Write in a {tone} tone. {useEmoji, select, Yes {Include relevant emojis} No {Do not use emojis}}.",
+              "user": "Create an engaging caption for a {contentType} about {topic} for {brand}.\n\nInclude call to action: {callToAction}",
+              "format": "Caption:\n{content}"
+            },
+            {
+              "id": "hashtags",
+              "label": "Hashtags",
+              "system": "You are a hashtag specialist for {platform}. Create relevant, trending hashtags that will increase visibility.",
+              "user": "Generate strategic hashtags for a {contentType} about {topic} for {brand} in the {industry} industry.\nNote: Only generate if hashtags are requested: {useHashtags}",
+              "format": "Hashtags:\n{content}"
+            },
+            {
+              "id": "variations",
+              "label": "Caption Variations",
+              "system": "Create variations of the main caption for A/B testing, maintaining the same {tone} tone and style guidelines for {useEmoji} emoji usage.",
+              "user": "Generate 2 alternative versions of the caption for this {platform} {contentType} about {topic}.\n\nOriginal caption context:\n{prevOutput}",
+              "format": "Alternative Captions:\n{content}"
+            }
+          ]
+        }
+      ,
+        "website-content": {
+          "url": "/editor/website-content",
+          "multiPrompt": true,
+          "fields": [
+            {
+              "id": "companyName",
+              "label": "Company Name",
+              "type": "text"
+            },
+            {
+              "id": "websiteType",
+              "label": "Website Type",
+              "type": "select",
+              "options": ["E-commerce", "Portfolio", "Corporate", "Landing Page", "SaaS"]
+            },
+            {
+              "id": "industry",
+              "label": "Industry",
+              "type": "text"
+            },
+            {
+              "id": "productsServices",
+              "label": "Products/Services",
+              "type": "text"
+            },
+            {
+              "id": "region",
+              "label": "Region",
+              "type": "text"
+            },
+            {
+              "id": "target",
+              "label": "Target Audience",
+              "type": "text"
+            },
+            {
+              "id": "style",
+              "label": "Style",
+              "type": "select",
+              "options": ["Professional", "Modern", "Traditional", "Minimalist", "Bold"]
+            },
+            {
+              "id": "tone",
+              "label": "Tone",
+              "type": "select",
+              "options": ["Formal", "Friendly", "Authoritative", "Inspirational", "Innovative"]
+            }
+          ],
+          "defaults": {
+            "companyName": "",
+            "websiteType": "Corporate",
+            "industry": "",
+            "productsServices": "",
+            "region": "",
+            "target": "",
+            "style": "Professional",
+            "tone": "Formal"
+          },
+          "promptChain": [
+            {
+              "id": "structure",
+              "label": "Website Structure",
+              "system": "You are a website information architect. Create a clear structure for a {websiteType} website that effectively presents {companyName}'s offerings.",
+              "user": "Create a website structure for {companyName}, a {industry} company in {region} offering {productsServices}. The website should effectively reach {target}.",
+              "format": "Website Structure:\n{content}"
+            },
+            {
+              "id": "hero",
+              "label": "Hero Section",
+              "system": "You are a website content strategist writing in a {style} style with a {tone} tone. Create an impactful hero section that immediately captures attention.",
+              "user": "Write the hero section content for {companyName}'s website. Include a main headline, subheadline, and call to action.\n\nContext:\nIndustry: {industry}\nRegion: {region}\nProducts/Services: {productsServices}\nTarget Audience: {target}",
+              "format": "Hero Section Content:\n{content}"
+            },
+            {
+              "id": "about",
+              "label": "About Section",
+              "system": "You are a brand storyteller writing in a {style} style with a {tone} tone.",
+              "user": "Write an engaging about section for {companyName}. Include the company's presence in {region} and its role in the {industry} industry. Highlight key products/services: {productsServices}.",
+              "format": "About Section Content:\n{content}"
+            },
+            {
+              "id": "services",
+              "label": "Products/Services Section",
+              "system": "You are a content writer specializing in product and service descriptions. Write in a {style} style with a {tone} tone.",
+              "user": "Create detailed, compelling descriptions for {companyName}'s offerings: {productsServices}. Target audience: {target}. Region: {region}.",
+              "format": "Products/Services Content:\n{content}"
+            },
+            {
+              "id": "cta",
+              "label": "Call-to-Action Sections",
+              "system": "You are a conversion copywriter writing in a {style} style with a {tone} tone.",
+              "user": "Create strategic call-to-action sections for {companyName}'s website. Consider the regional market ({region}), target audience ({target}), and offerings ({productsServices}).",
+              "format": "Call-to-Action Content:\n{content}"
+            },
+            {
+              "id": "contact",
+              "label": "Contact Section",
+              "system": "You are a website content writer specializing in contact sections. Write in a {style} style with a {tone} tone.",
+              "user": "Write the contact section content for {companyName}. Include appropriate messaging for a {industry} company in {region} targeting {target}.",
+              "format": "Contact Section Content:\n{content}"
+            }
+          ]
+        },
+    "technical-research": {
+      "url": "/editor/technical-research",
+      "fields": [
+        {
+          "id": "subject",
+          "label": "Research Topic",
+          "type": "text"
+        },
+        {
+          "id": "style",
+          "label": "Style",
+          "type": "select",
+          "options": ["Academic", "Professional", "Technical", "Explanatory"]
+        },
+        {
+          "id": "scope",
+          "label": "Research Scope",
+          "type": "text"
+        },
+        {
+          "id": "audience",
+          "label": "Target Audience",
+          "type": "text"
+        },
+        {
+          "id": "objective",
+          "label": "Research Objective",
+          "type": "text"
+        },
+        {
+          "id": "depth",
+          "label": "Research Depth",
+          "type": "select",
+          "options": ["Basic", "Intermediate", "Advanced", "Expert"]
+        }
+      ],
+      "defaults": {
+        "subject": "",
+        "scope": "",
+        "audience": "",
+        "objective": "",
+        "style": "Technical",
+        "depth": "Intermediate"
+      },
+      "prompts": {
+        "outline": {
+          "system": "You are a technical research expert. Create a detailed outline with sections for a technical research paper. List only the section titles and a brief summary for each section. Format as 'Section 1: [Title] - [Brief Summary]' and so on.",
+          "user": "Create a section outline for a technical research about {subject}\nScope: {scope}\nAudience: {audience}\nObjective: {objective}\nStyle: {style}\nDepth: {depth}"
+        },
+        "section": {
+          "system": "You are a technical research expert writing in {style} style at {depth} level. Write a comprehensive section for a technical research paper.",
+          "user": "Write the complete content for {sectionTitle} of the technical research about {subject}.\nScope: {scope}\nAudience: {audience}\nObjective: {objective}"
+        }
+      }
     },
-    "generate_image": {
-        "module": "generation",
-        "function": "create_image"
+    "tweet": {
+      "url": "/editor/tweet",
+      "fields": [
+        {
+          "id": "subject",
+          "label": "Tweet Topic",
+          "type": "text"
+        },
+        {
+          "id": "style",
+          "label": "Style",
+          "type": "select",
+          "options": ["Professional", "Friendly", "Human", "Royal"]
+        },
+        {
+          "id": "from",
+          "label": "From",
+          "type": "text"
+        },
+        {
+          "id": "intention",
+          "label": "Intention",
+          "type": "text"
+        },
+        {
+          "id": "context",
+          "label": "Context",
+          "type": "text"
+        },
+        {
+          "id": "useEmoji",
+          "label": "Use Emoji",
+          "type": "select",
+          "options": ["Yes", "No"]
+        }
+      ],
+      "defaults": {
+        "subject": "",
+        "intention": "",
+        "context": "",
+        "from": "",
+        "style": "Professional",
+        "useEmoji": "No"
+      },
+      "prompts": {
+        "system": "You are an expert at writing engaging tweets. Create a tweet using the style: {style}. {useEmoji, select, Yes {Include relevant emojis} No {Do not use any emojis}}",
+        "user": "Write a tweet about: {subject}\nWith the intention: {intention}\nContext: {context}\nFrom: {from}"
+      }
     },
-    "trade_crypto": {
-        "module": "trading",
-        "function": "execute_crypto_trade"
-    },
-    "suggest_movies": {
-        "module": "suggestions",
-        "function": "recommend_movies"
+    "sales-pitch": {
+      "url": "/editor/sales-pitch",
+      "fields": [
+        {
+          "id": "subject",
+          "label": "Subject",
+          "type": "text"
+        },
+        {
+          "id": "style",
+          "label": "Style",
+          "type": "select",
+          "options": ["Professional", "Friendly", "Human", "Royal"]
+        },
+        {
+          "id": "to",
+          "label": "To",
+          "type": "text"
+        },
+        {
+          "id": "from",
+          "label": "From",
+          "type": "text"
+        },
+        {
+          "id": "intention",
+          "label": "Intention",
+          "type": "text"
+        },
+        {
+          "id": "context",
+          "label": "Context",
+          "type": "text"
+        }
+      ],
+      "defaults": {
+        "subject": "",
+        "intention": "",
+        "context": "",
+        "to": "",
+        "from": "",
+        "style": "Professional"
+      },
+      "prompts": {
+        "system": "You are an expert at writing sales pitches. Create a compelling sales pitch using the style: {style}",
+        "user": "Create a sales pitch for the subject: {subject}\nWith the intention: {intention}\nContext: {context}\nTargeted to: {to}\nFrom: {from}"
+      }
     }
-}
+  }
