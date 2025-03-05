@@ -1,0 +1,125 @@
+# Example 1: Simple Text Processing Workflow
+workflow: TextSummarizer
+
+# Define variables
+max_length := 100
+include_keywords := true
+
+# Define nodes
+userInput: input(type="text")
+textAnalysis: function(name="analyze_text", input={"text": "$userInput", "max_keywords": 5})
+summaryPrompt: prompt(
+  system="You are a professional summarizer. Create a concise summary with no more than {{max_length}} characters.",
+  user="Please summarize the following text:\n\n{{userInput}}\n\nKeywords: {{textAnalysis_result.keywords}}"
+)
+result: output(key="summary", value="$summaryPrompt_result.response")
+
+# Define connections
+userInput --> textAnalysis
+textAnalysis --> summaryPrompt
+summaryPrompt --> result
+
+# Example 2: Conditional Workflow with Multiple Agents
+workflow: ContentCreator
+
+# Define variables
+content_type := "blog_post"
+tone := "professional"
+word_count := 500
+
+# Define nodes
+userInput: input(type="text")
+topicAnalysis: function(name="analyze_topic", input={"topic": "$userInput"})
+checkLength: condition(expression="len($userInput) > 10")
+errorOutput: output(key="error", value="Topic is too short")
+outlinePrompt: prompt(
+  system="You are a content outline creator. Create an outline for a {{content_type}} with a {{tone}} tone.",
+  user="Create an outline for a {{content_type}} about {{userInput}}.\nTarget length: {{word_count}} words.\nKey aspects: {{topicAnalysis_result.key_aspects}}"
+)
+contentPrompt: prompt(
+  system="You are a professional content writer with a {{tone}} writing style.",
+  user="Write a {{content_type}} based on the following outline:\n\n{{outlinePrompt_result.response}}\n\nTarget length: {{word_count}} words."
+)
+finalContent: output(key="content", value="$contentPrompt_result.response")
+
+# Define connections
+userInput --> topicAnalysis
+userInput --> checkLength
+checkLength ==> topicAnalysis  # If condition is true
+checkLength =/> errorOutput    # If condition is false
+topicAnalysis --> outlinePrompt
+outlinePrompt --> contentPrompt
+contentPrompt --> finalContent
+
+# Example 3: Multi-Agent Research Workflow
+workflow: ResearchAssistant
+
+# Define variables
+depth := "detailed"
+source_count := 5
+focus_areas := ["key findings", "methodology", "limitations"]
+
+# Define nodes
+userInput: input(type="text")
+searchAgent: agent(name="web_search", input={"query": "$userInput", "num_results": "$source_count"})
+researchPlanner: prompt(
+  system="You are a research planning expert. Create a research plan with specific questions to investigate.",
+  user="Create a {{depth}} research plan for studying {{userInput}}.\nFocus on: {{focus_areas}}.\nUse these sources as starting points:\n{{searchAgent_result.sources}}"
+)
+dataCollector: agent(name="data_collector", input={"research_plan": "$researchPlanner_result.response", "sources": "$searchAgent_result.sources"})
+analyzeData: function(name="analyze_research_data", input={"data": "$dataCollector_result.collected_data"})
+finalReport: prompt(
+  system="You are a research report writer. Synthesize information into a coherent report.",
+  user="Write a {{depth}} research report about {{userInput}}.\n\nData collected:\n{{dataCollector_result.summary}}\n\nAnalysis:\n{{analyzeData_result.insights}}\n\nFocus on these areas: {{focus_areas}}"
+)
+citations: function(name="format_citations", input={"sources": "$searchAgent_result.sources"})
+completeReport: output(key="report", value={"content": "$finalReport_result.response", "citations": "$citations_result.formatted_citations"})
+
+# Define connections
+userInput --> searchAgent
+searchAgent --> researchPlanner
+researchPlanner --> dataCollector
+dataCollector --> analyzeData
+analyzeData --> finalReport
+searchAgent --> citations
+finalReport --> completeReport
+citations --> completeReport
+
+# Example 4: Customer Support Workflow
+workflow: CustomerSupportAssistant
+
+# Define variables
+product_knowledge := "v2.5"
+support_tone := "helpful"
+max_suggestions := 3
+
+# Define nodes
+userQuery: input(type="text")
+intentClassifier: function(name="classify_intent", input={"text": "$userQuery"})
+knowledgeRetrieval: function(name="retrieve_knowledge", input={"query": "$userQuery", "product_version": "$product_knowledge"})
+checkIntent: condition(expression="$intentClassifier_result.intent == 'technical_issue'")
+technicalResponse: prompt(
+  system="You are a technical support specialist. Provide detailed technical solutions with a {{support_tone}} tone.",
+  user="Resolve this technical issue:\n\n{{userQuery}}\n\nRelevant knowledge:\n{{knowledgeRetrieval_result.articles}}\n\nSuggested approaches: {{knowledgeRetrieval_result.solutions}}"
+)
+generalResponse: prompt(
+  system="You are a customer support agent with a {{support_tone}} tone.",
+  user="Respond to this customer query:\n\n{{userQuery}}\n\nRelevant information:\n{{knowledgeRetrieval_result.articles}}\n\nSuggested responses: {{knowledgeRetrieval_result.responses}}"
+)
+suggestRelated: function(name="suggest_related_topics", input={"query": "$userQuery", "max_suggestions": "$max_suggestions"})
+formatResponse: function(name="format_support_response", input={"response": "$checkIntent_result ? $technicalResponse_result.response : $generalResponse_result.response", "related": "$suggestRelated_result.suggestions"})
+finalResponse: output(key="response", value="$formatResponse_result")
+
+# Define connections
+userQuery --> intentClassifier
+userQuery --> knowledgeRetrieval
+intentClassifier --> checkIntent
+knowledgeRetrieval --> checkIntent
+checkIntent ==> technicalResponse  # If technical issue
+checkIntent =/> generalResponse    # If not technical issue
+technicalResponse --> suggestRelated
+generalResponse --> suggestRelated
+suggestRelated --> formatResponse
+technicalResponse --> formatResponse
+generalResponse --> formatResponse
+formatResponse --> finalResponse
