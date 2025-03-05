@@ -1,0 +1,18 @@
+{
+    "write_sales_pitch": {
+        "module": "writing",
+        "function": "generate_sales_pitch"
+    },
+    "generate_image": {
+        "module": "generation",
+        "function": "create_image"
+    },
+    "trade_crypto": {
+        "module": "trading",
+        "function": "execute_crypto_trade"
+    },
+    "suggest_movies": {
+        "module": "suggestions",
+        "function": "recommend_movies"
+    }
+}
