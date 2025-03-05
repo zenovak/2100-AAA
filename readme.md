@@ -1,4 +1,4 @@
-# Agent Integration API: Developer Guide
+# Agent of All Agents API: Developer Guide
 
 A flexible Python API for integrating, developing, and extending AI agents with standardized interfaces and modular functionality.
 
