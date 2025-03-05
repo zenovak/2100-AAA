@@ -121,6 +121,44 @@ urfn_registry = convert_natural_language_to_urfn(description)
 import json
 print(json.dumps(urfn_registry, indent=2))
 
+
+
+1. Natural Language Workflow Converter
+The core component is a natural language processor that converts plain English descriptions into structured workflow definitions:
+bashCopy# Example usage
+python naturalLanguageAgents.py --description "Create a workflow called Customer Support that takes a customer question as input. First, analyze the sentiment. Then, search for relevant knowledge base articles. Finally, generate a helpful response."
+2. Key Features
+
+Plain English Input: Describe workflows in natural language without any special syntax
+LLM-Powered Parsing: Uses an LLM to extract workflow structure from natural descriptions
+Automatic Structure Detection: Identifies inputs, steps, and outputs automatically
+Fallback Parsing: Includes regex-based backup parsing for offline usage
+URFN Generation: Converts parsed workflows to URFN registry entries
+
+3. How It Works
+
+Input: You provide a natural language description of your workflow
+Parsing: The system extracts:
+
+Workflow name
+Input variables
+Processing steps
+Step connections
+Output definition
+
+
+Conversion: The parsed workflow is converted to URFN registry entries
+Registration: The entries can be added to the agent API registry
+
+4. Command-Line Interface
+The CLI tool offers multiple ways to use the converter:
+
+File input: --file workflow.txt
+Direct input: --description "Create a workflow..."
+Interactive mode: --interactive
+Output options: Save to file, update existing registry, pretty-print
+Visualization: Generate a simple text visualization of the workflow
+
 # Register with the Agent API
 from agent_integration_api import agent_api
 for urfn_name, urfn_def in urfn_registry.items():
