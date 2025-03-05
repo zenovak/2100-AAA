@@ -18,7 +18,7 @@ A flexible Python API for integrating, developing, and extending AI agents with 
 
 ## Overview
 
-The Agent Integration API provides a standardized way to create, register, and execute various AI agents while allowing for modular extension through Unique Reserved Function Names (URFNs) and API augmentation patterns.
+The Agent of All Agents API provides a standardized way to create, register, and execute various AI agents while allowing for modular extension through Unique Reserved Function Names (URFNs) and API augmentation patterns.
 
 Key features:
 - Register custom agents with standardized interfaces
@@ -26,17 +26,7 @@ Key features:
 - Augment the API with new endpoints
 - Maintain compatibility with existing AI agent standards
 
-## Installation
 
-```bash
-pip install agent-integration-api
-```
-
-Or with Poetry:
-
-```bash
-poetry add agent-integration-api
-```
 
 ## Core Concepts
 
