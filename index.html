@@ -530,898 +530,857 @@
         </div>
     </template>
 
-    <script>
-        // Sample data
-        let functionsRegistry = JSON.parse(`{
-            "movie-script": {
-                "url": "/editor/movie-script",
-                "multiPrompt": true,
-                "fields": [
-                    {
-                        "id": "genre",
-                        "label": "Genre",
-                        "type": "select",
-                        "options": [
-                            "Action",
-                            "Drama",
-                            "Comedy",
-                            "Science Fiction",
-                            "Horror",
-                            "Romance",
-                            "Thriller",
-                            "Adventure",
-                            "Mystery",
-                            "Fantasy"
-                        ]
-                    },
-                    {
-                        "id": "title",
-                        "label": "Movie Title",
-                        "type": "text"
-                    }
-                ],
-                "defaults": {
-                    "genre": "Drama",
-                    "title": ""
+
+<script>
+    // Sample data
+    let functionsRegistry = JSON.parse(`{
+        "movie-script": {
+            "url": "/editor/movie-script",
+            "multiPrompt": true,
+            "fields": [
+                {
+                    "id": "genre",
+                    "label": "Genre",
+                    "type": "select",
+                    "options": [
+                        "Action",
+                        "Drama",
+                        "Comedy",
+                        "Science Fiction",
+                        "Horror",
+                        "Romance",
+                        "Thriller",
+                        "Adventure",
+                        "Mystery",
+                        "Fantasy"
+                    ]
                 },
-                "promptChain": [
-                    {
-                        "id": "synopsis",
-                        "label": "Synopsis",
-                        "system": "You are a story development expert creating a synopsis for a {genre} film.",
-                        "user": "Write a synopsis for '{title}'",
-                        "format": "Synopsis:\\n{content}"
-                    }
-                ]
+                {
+                    "id": "title",
+                    "label": "Movie Title",
+                    "type": "text"
+                }
+            ],
+            "defaults": {
+                "genre": "Drama",
+                "title": ""
             },
-            "newsletter": {
-                "url": "/editor/newsletter",
-                "multiPrompt": true,
-                "fields": [
-                    {
-                        "id": "newsletterType",
-                        "label": "Newsletter Type",
-                        "type": "select",
-                        "options": [
-                            "Company Update",
-                            "Industry News",
-                            "Product Focused"
-                        ]
-                    }
-                ],
-                "defaults": {
-                    "newsletterType": "Company Update"
-                },
-                "promptChain": []
-            }
-        }`);
-
-        // Current function being edited
-        let currentFunction = null;
-
-      // DOM Elements
-        const registryListEl = document.getElementById('registry-list');
-        const emptyStateEl = document.getElementById('empty-state');
-        const functionEditorEl = document.getElementById('function-editor');
-        const addNewBtnEl = document.getElementById('add-new-btn');
-        const createNewBtnEl = document.getElementById('create-new-btn');
-        const functionIdEl = document.getElementById('function-id');
-        const functionUrlEl = document.getElementById('function-url');
-        const multiPromptEl = document.getElementById('multi-prompt');
-        const fieldsContainerEl = document.getElementById('fields-container');
-        const defaultsContainerEl = document.getElementById('defaults-container');
-        const addFieldBtnEl = document.getElementById('add-field-btn');
-        const promptChainContainerEl = document.getElementById('prompt-chain-container');
-        const addPromptBtnEl = document.getElementById('add-prompt-btn');
-        const previewAllPromptsBtn = document.getElementById('preview-all-prompts');
-        const typeSpecificContainerEl = document.getElementById('type-specific-container');
-        const addTypePromptBtnEl = document.getElementById('add-type-prompt-btn');
-        const typeSelectorEl = document.getElementById('type-selector');
-        const jsonPreviewEl = document.getElementById('json-preview');
-        const saveBtnEl = document.getElementById('save-btn');
-        const deleteBtnEl = document.getElementById('delete-btn');
-        const exportBtnEl = document.getElementById('export-btn');
-        const importBtnEl = document.getElementById('import-btn');
-        const generateDocsBtnEl = document.getElementById('generate-docs-btn');
-        const searchInputEl = document.getElementById('search-input');
-        const tabs = document.querySelectorAll('.tab');
-
-        // Initialize the app
-        function init() {
-            renderFunctionList();
-            setupEventListeners();
-        }
-
-        // Render the list of functions
-        function renderFunctionList() {
-            registryListEl.innerHTML = '';
-            
-            Object.keys(functionsRegistry).forEach(functionId => {
-                const func = functionsRegistry[functionId];
-                const item = document.createElement('div');
-                item.className = 'registry-item';
-                item.dataset.id = functionId;
-                
-                let badgeText = '';
-                if (func.multiPrompt) {
-                    badgeText = '<span class="badge badge-blue">Multi-Prompt</span>';
+            "promptChain": [
+                {
+                    "id": "synopsis",
+                    "label": "Synopsis",
+                    "system": "You are a story development expert creating a synopsis for a {genre} film.",
+                    "user": "Write a synopsis for '{title}'",
+                    "format": "Synopsis:\\n{content}"
                 }
-                
-                item.innerHTML = `
-                    ${functionId} ${badgeText}
-                `;
-                
-                item.addEventListener('click', () => {
-                    document.querySelectorAll('.registry-item').forEach(el => {
-                        el.classList.remove('active');
-                    });
-                    item.classList.add('active');
-                    loadFunctionDetails(functionId);
-                });
-                
-                registryListEl.appendChild(item);
-            });
-        }
-
-        // Search functions
-        function searchFunctions(query) {
-            const normalizedQuery = query.toLowerCase().trim();
-            
-            document.querySelectorAll('.registry-item').forEach(item => {
-                const functionId = item.dataset.id.toLowerCase();
-                if (functionId.includes(normalizedQuery) || !normalizedQuery) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
+            ]
+        },
+        "newsletter": {
+            "url": "/editor/newsletter",
+            "multiPrompt": true,
+            "fields": [
+                {
+                    "id": "newsletterType",
+                    "label": "Newsletter Type",
+                    "type": "select",
+                    "options": [
+                        "Company Update",
+                        "Industry News",
+                        "Product Focused"
+                    ]
                 }
-            });
+            ],
+            "defaults": {
+                "newsletterType": "Company Update"
+            },
+            "promptChain": []
         }
+    }`);
 
-        // Add field UI element
-        function addFieldUI() {
-            const template = document.getElementById('field-template');
-            const fieldEl = template.content.cloneNode(true);
-            const container = fieldsContainerEl.appendChild(fieldEl).querySelector('.field-row').parentNode;
-            
-            // Add event listeners
-            const typeSelect = container.querySelector('.field-type');
-            const optionsContainer = container.querySelector('.field-options');
-            
-            typeSelect.addEventListener('change', () => {
-                if (typeSelect.value === 'select') {
-                    optionsContainer.style.display = 'block';
-                } else {
-                    optionsContainer.style.display = 'none';
-                }
-            });
-            
-            container.querySelector('.remove-field').addEventListener('click', () => {
-                container.remove();
-                updateModel();
-            });
-            
-            container.querySelector('.add-option').addEventListener('click', () => {
-                addOptionUI(container.querySelector('.options-container'));
-                updateModel();
-            });
-            
-            return container;
-        }
+    // Current function being edited
+    let currentFunction = null;
 
+    // DOM Elements
+    const registryListEl = document.getElementById('registry-list');
+    const emptyStateEl = document.getElementById('empty-state');
+    const functionEditorEl = document.getElementById('function-editor');
+    const addNewBtnEl = document.getElementById('add-new-btn');
+    const createNewBtnEl = document.getElementById('create-new-btn');
+    const functionIdEl = document.getElementById('function-id');
+    const functionUrlEl = document.getElementById('function-url');
+    const multiPromptEl = document.getElementById('multi-prompt');
+    const fieldsContainerEl = document.getElementById('fields-container');
+    const defaultsContainerEl = document.getElementById('defaults-container');
+    const addFieldBtnEl = document.getElementById('add-field-btn');
+    const promptChainContainerEl = document.getElementById('prompt-chain-container');
+    const addPromptBtnEl = document.getElementById('add-prompt-btn');
+    const previewAllPromptsBtn = document.getElementById('preview-all-prompts');
+    const typeSpecificContainerEl = document.getElementById('type-specific-container');
+    const addTypePromptBtnEl = document.getElementById('add-type-prompt-btn');
+    const typeSelectorEl = document.getElementById('type-selector');
+    const jsonPreviewEl = document.getElementById('json-preview');
+    const saveBtnEl = document.getElementById('save-btn');
+    const deleteBtnEl = document.getElementById('delete-btn');
+    const exportBtnEl = document.getElementById('export-btn');
+    const importBtnEl = document.getElementById('import-btn');
+    const generateDocsBtnEl = document.getElementById('generate-docs-btn');
+    const searchInputEl = document.getElementById('search-input');
+    const tabs = document.querySelectorAll('.tab');
 
-        // Fix for the loadFunctionDetails function
-function loadFunctionDetails(functionId) {
-    currentFunction = JSON.parse(JSON.stringify(functionsRegistry[functionId])); // Deep clone to avoid reference issues
-    currentFunction.id = functionId;
-    
-    // Show editor, hide empty state
-    emptyStateEl.style.display = 'none';
-    functionEditorEl.style.display = 'block';
-    
-    // Populate basic info
-    functionIdEl.value = functionId;
-    functionUrlEl.value = currentFunction.url || '';
-    multiPromptEl.value = currentFunction.multiPrompt ? 'true' : 'false';
-    
-    // Populate fields
-    renderFields();
-    
-    // Populate prompt chain
-    renderPromptChain();
-    
-    // Update type selector and load type-specific prompts if applicable
-    updateTypeSelector();
-    
-    // If a type field is available, attempt to select the first type
-    const typeField = currentFunction.fields?.find(field => {
-        return field.type === 'select' && 
-            (field.id === 'type' || field.id.toLowerCase().includes('type'));
-    });
-    
-    if (typeField && typeField.options && typeField.options.length > 0) {
-        // Select the first type or the default value if available
-        const defaultType = currentFunction.defaults?.[typeField.id] || typeField.options[0];
-        typeSelectorEl.value = defaultType;
-        
-        // Trigger the change event to load type-specific prompts
-        if (currentFunction.typeSpecificPrompts && 
-            currentFunction.typeSpecificPrompts[defaultType]) {
-            renderTypeSpecificPrompts(defaultType);
-        }
+    // Initialize the app
+    function init() {
+        renderFunctionList();
+        setupEventListeners();
     }
-    
-    // Update JSON preview
-    updateJsonPreview();
-    
-    // Make sure all tabs are properly initialized
-    initializeTabs();
-}
 
-// Function to ensure all tabs are properly initialized
-function initializeTabs() {
-    // Ensure the first tab is active initially
-    tabs.forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    const firstTab = tabs[0];
-    firstTab.classList.add('active');
-    
-    const firstContent = document.querySelector(`.tab-content[data-tab-content="${firstTab.dataset.tab}"]`);
-    if (firstContent) {
-        firstContent.classList.add('active');
-    }
-    
-    // Make sure event listeners for tab switching are properly attached
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Remove active class from all tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            
-            // Add active class to clicked tab
-            tab.classList.add('active');
-            
-            // Hide all tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // Show content for active tab
-            const activeContent = document.querySelector(`.tab-content[data-tab-content="${tab.dataset.tab}"]`);
-            if (activeContent) {
-                activeContent.classList.add('active');
-            }
-        });
-    });
-}
-
-// Enhanced renderPromptChain function
-function renderPromptChain() {
-    promptChainContainerEl.innerHTML = '';
-    
-    if (!currentFunction.promptChain) {
-        currentFunction.promptChain = [];
-    }
-    
-    if (currentFunction.promptChain.length === 0) {
-        promptChainContainerEl.innerHTML = '<p>No prompts added yet. Click "+ Add Prompt" to begin.</p>';
-    } else {
-        currentFunction.promptChain.forEach(prompt => {
-            const promptEl = addPromptUI();
-            
-            // Populate prompt values
-            promptEl.querySelector('.prompt-id').value = prompt.id || '';
-            promptEl.querySelector('.prompt-label').value = prompt.label || '';
-            promptEl.querySelector('.prompt-system').value = prompt.system || '';
-            promptEl.querySelector('.prompt-user').value = prompt.user || '';
-            promptEl.querySelector('.prompt-format').value = prompt.format || '';
-            
-            // Add preview button event listener
-            promptEl.querySelector('.preview-prompt-btn').addEventListener('click', () => {
-                previewRenderedPrompt(promptEl);
-            });
-        });
-    }
-}
-
-// Enhanced updateTypeSelector function
-function updateTypeSelector() {
-    typeSelectorEl.innerHTML = '<option value="">Select a type...</option>';
-    
-    const typeField = currentFunction.fields?.find(field => {
-        return field.type === 'select' && 
-            (field.id === 'type' || field.id.toLowerCase().includes('type'));
-    });
-    
-    if (typeField && typeField.options) {
-        typeField.options.forEach(option => {
-            const optEl = document.createElement('option');
-            optEl.value = option;
-            optEl.textContent = option;
-            typeSelectorEl.appendChild(optEl);
-        });
+    // Render the list of functions
+    function renderFunctionList() {
+        registryListEl.innerHTML = '';
         
-        // If there are type-specific prompts, highlight the tab
-        if (currentFunction.typeSpecificPrompts) {
-            const typeSpecificTab = document.querySelector('.tab[data-tab="typeSpecific"]');
-            if (typeSpecificTab) {
-                typeSpecificTab.style.position = 'relative';
-                if (!typeSpecificTab.querySelector('.notification-dot')) {
-                    const notificationDot = document.createElement('span');
-                    notificationDot.className = 'notification-dot';
-                    notificationDot.style.cssText = `
-                        position: absolute;
-                        top: 5px;
-                        right: 5px;
-                        width: 8px;
-                        height: 8px;
-                        background-color: var(--primary);
-                        border-radius: 50%;
-                    `;
-                    typeSpecificTab.appendChild(notificationDot);
-                }
-            }
-        }
-    } else {
-        typeSpecificContainerEl.innerHTML = '<p>No type field found. To use type-specific prompts, add a select field with "type" in its ID.</p>';
-    }
-}
-
-// Enhanced renderTypeSpecificPrompts function
-function renderTypeSpecificPrompts(type) {
-    typeSpecificContainerEl.innerHTML = '';
-    
-    if (!type) {
-        typeSpecificContainerEl.innerHTML = '<p>Please select a type to view or add type-specific prompts.</p>';
-        return;
-    }
-    
-    if (!currentFunction.typeSpecificPrompts || 
-        !currentFunction.typeSpecificPrompts[type] ||
-        !currentFunction.typeSpecificPrompts[type].additional ||
-        currentFunction.typeSpecificPrompts[type].additional.length === 0) {
-        
-        typeSpecificContainerEl.innerHTML = `
-            <p>No type-specific prompts for "${type}" yet.</p>
-            <p>Click "+ Add Type-Specific Prompt" to create specialized prompts that will only be used when this type is selected.</p>
-        `;
-    } else {
-        const prompts = currentFunction.typeSpecificPrompts[type].additional;
-        
-        prompts.forEach((prompt, index) => {
-            const template = document.getElementById('type-prompt-template');
-            const promptEl = template.content.cloneNode(true);
-            const container = typeSpecificContainerEl.appendChild(promptEl).querySelector('.prompt-chain-item');
+        Object.keys(functionsRegistry).forEach(functionId => {
+            const func = functionsRegistry[functionId];
+            const item = document.createElement('div');
+            item.className = 'registry-item';
+            item.dataset.id = functionId;
             
-            // Populate values
-            container.querySelector('.type-prompt-id').value = prompt.id || '';
-            container.querySelector('.type-prompt-id').dataset.index = index;
-            
-            container.querySelector('.type-prompt-label').value = prompt.label || '';
-            container.querySelector('.type-prompt-label').dataset.index = index;
-            
-            container.querySelector('.type-prompt-system').value = prompt.system || '';
-            container.querySelector('.type-prompt-system').dataset.index = index;
-            
-            container.querySelector('.type-prompt-user').value = prompt.user || '';
-            container.querySelector('.type-prompt-user').dataset.index = index;
-            
-            container.querySelector('.type-prompt-format').value = prompt.format || '';
-            container.querySelector('.type-prompt-format').dataset.index = index;
-            
-            // Add event listeners
-            container.querySelector('.remove-btn').addEventListener('click', () => {
-                currentFunction.typeSpecificPrompts[type].additional.splice(index, 1);
-                renderTypeSpecificPrompts(type);
-                updateJsonPreview();
-            });
-            
-            // Input change events
-            container.querySelectorAll('input, textarea').forEach(input => {
-                input.addEventListener('input', () => {
-                    updateTypeSpecificPrompt(type, index, input);
-                });
-            });
-        });
-    }
-}
-
-// Fix for rendering fields
-function renderFields() {
-    fieldsContainerEl.innerHTML = '';
-    defaultsContainerEl.innerHTML = '';
-    
-    if (!currentFunction.fields || currentFunction.fields.length === 0) {
-        fieldsContainerEl.innerHTML = '<p>No fields added yet. Click "+ Add Field" to begin.</p>';
-        return;
-    }
-    
-    currentFunction.fields.forEach(field => {
-        const fieldEl = addFieldUI();
-        
-        // Populate field values
-        fieldEl.querySelector('.field-id').value = field.id || '';
-        fieldEl.querySelector('.field-label').value = field.label || '';
-        fieldEl.querySelector('.field-type').value = field.type || 'text';
-        
-        // Handle options for select fields
-        if (field.type === 'select' && field.options) {
-            const optionsContainer = fieldEl.querySelector('.options-container');
-            fieldEl.querySelector('.field-options').style.display = 'block';
-            
-            field.options.forEach(option => {
-                const optionEl = addOptionUI(optionsContainer);
-                optionEl.querySelector('.option-value').value = option;
-            });
-        }
-    });
-    
-    // Render defaults
-    renderDefaultValues();
-}
-
-// Separate function for rendering default values
-function renderDefaultValues() {
-    defaultsContainerEl.innerHTML = '';
-    
-    if (!currentFunction.defaults || Object.keys(currentFunction.defaults).length === 0) {
-        defaultsContainerEl.innerHTML = '<p>No default values set. Default values will appear here when fields are added.</p>';
-        return;
-    }
-    
-    Object.keys(currentFunction.defaults).forEach(fieldId => {
-        const defaultValue = currentFunction.defaults[fieldId];
-        const fieldObj = currentFunction.fields.find(f => f.id === fieldId);
-        
-        if (!fieldObj) return; // Skip if field no longer exists
-        
-        const defaultEl = document.createElement('div');
-        defaultEl.className = 'form-group';
-        defaultEl.innerHTML = `
-            <label for="default-${fieldId}">${fieldObj.label || fieldId} Default Value</label>
-            ${fieldObj && fieldObj.type === 'select' 
-                ? `<select id="default-${fieldId}" class="default-value" data-field="${fieldId}">
-                    ${fieldObj.options.map(opt => `
-                        <option value="${opt}" ${defaultValue === opt ? 'selected' : ''}>${opt}</option>
-                    `).join('')}
-                   </select>`
-                : `<input type="text" id="default-${fieldId}" class="default-value" data-field="${fieldId}" value="${defaultValue}">`
-            }
-        `;
-        
-        defaultsContainerEl.appendChild(defaultEl);
-    });
-}
-        
-        // Add option UI element
-        function addOptionUI(container) {
-            const template = document.getElementById('option-template');
-            const optionEl = template.content.cloneNode(true);
-            const optionContainer = container.appendChild(optionEl).querySelector('.field-row');
-            
-            optionContainer.querySelector('.remove-option').addEventListener('click', () => {
-                optionContainer.remove();
-                updateModel();
-            });
-            
-            return optionContainer;
-        }
-
-        // Add prompt UI element
-        function addPromptUI() {
-            const template = document.getElementById('prompt-template');
-            const promptEl = template.content.cloneNode(true);
-            const container = promptChainContainerEl.appendChild(promptEl).querySelector('.prompt-chain-item');
-            
-            container.querySelector('.remove-btn').addEventListener('click', () => {
-                container.remove();
-                updateModel();
-            });
-            
-            return container;
-        }
-
-        // Update type selector
-        function updateTypeSelector() {
-            typeSelectorEl.innerHTML = '<option value="">Select a type...</option>';
-            
-            const typeField = currentFunction.fields.find(field => {
-                return field.type === 'select' && 
-                    (field.id === 'type' || field.id.toLowerCase().includes('type'));
-            });
-            
-            if (typeField && typeField.options) {
-                typeField.options.forEach(option => {
-                    const optEl = document.createElement('option');
-                    optEl.value = option;
-                    optEl.textContent = option;
-                    typeSelectorEl.appendChild(optEl);
-                });
-            }
-        }
-
-        // Update JSON preview
-        function updateJsonPreview() {
-            const json = JSON.stringify(currentFunction, null, 2);
-            jsonPreviewEl.textContent = json;
-        }
-
-        // Update the data model from UI
-        function updateModel() {
-            if (!currentFunction) return;
-            
-            // Update basic info
-            currentFunction.id = functionIdEl.value;
-            currentFunction.url = functionUrlEl.value;
-            currentFunction.multiPrompt = multiPromptEl.value === 'true';
-            
-            // Update fields
-            currentFunction.fields = [];
-            document.querySelectorAll('#fields-container > div').forEach(fieldContainer => {
-                const fieldId = fieldContainer.querySelector('.field-id').value;
-                const fieldLabel = fieldContainer.querySelector('.field-label').value;
-                const fieldType = fieldContainer.querySelector('.field-type').value;
-                
-                if (!fieldId) return;
-                
-                const field = {
-                    id: fieldId,
-                    label: fieldLabel,
-                    type: fieldType
-                };
-                
-                // Add options for select fields
-                if (fieldType === 'select') {
-                    const options = [];
-                    fieldContainer.querySelectorAll('.option-value').forEach(optionEl => {
-                        if (optionEl.value) {
-                            options.push(optionEl.value);
-                        }
-                    });
-                    
-                    if (options.length) {
-                        field.options = options;
-                    }
-                }
-                
-                currentFunction.fields.push(field);
-            });
-            
-            // Update defaults
-            currentFunction.defaults = {};
-            document.querySelectorAll('.default-value').forEach(defaultEl => {
-                const fieldId = defaultEl.dataset.field;
-                currentFunction.defaults[fieldId] = defaultEl.value;
-            });
-            
-            // Update prompt chain
-            currentFunction.promptChain = [];
-            document.querySelectorAll('#prompt-chain-container .prompt-chain-item').forEach(promptContainer => {
-                const promptId = promptContainer.querySelector('.prompt-id').value;
-                const promptLabel = promptContainer.querySelector('.prompt-label').value;
-                const promptSystem = promptContainer.querySelector('.prompt-system').value;
-                const promptUser = promptContainer.querySelector('.prompt-user').value;
-                const promptFormat = promptContainer.querySelector('.prompt-format').value;
-                
-                if (!promptId) return;
-                
-                currentFunction.promptChain.push({
-                    id: promptId,
-                    label: promptLabel,
-                    system: promptSystem,
-                    user: promptUser,
-                    format: promptFormat
-                });
-            });
-            
-            // Update JSON preview
-            updateJsonPreview();
-        }
-
-        // Create a new function
-        function createNewFunction() {
-            const newId = 'new-function-' + Math.floor(Math.random() * 1000);
-            functionsRegistry[newId] = {
-                url: '/editor/' + newId,
-                multiPrompt: true,
-                fields: [],
-                defaults: {},
-                promptChain: []
-            };
-            
-            renderFunctionList();
-            loadFunctionDetails(newId);
-            
-            // Select the new item in the list
-            document.querySelector(`.registry-item[data-id="${newId}"]`).classList.add('active');
-        }
-
-        // Save the current function
-        function saveFunction() {
-            updateModel();
-            
-            const functionId = functionIdEl.value;
-            if (!functionId) {
-                alert('Function ID is required');
-                return;
+            let badgeText = '';
+            if (func.multiPrompt) {
+                badgeText = '<span class="badge badge-blue">Multi-Prompt</span>';
             }
             
-            // Validate function
-            const errors = validateFunction();
-            if (errors.length > 0) {
-                alert('Validation failed:\n- ' + errors.join('\n- '));
-                return;
-            }
-            
-            // If ID changed, need to update the registry
-            if (currentFunction.id !== functionId) {
-                delete functionsRegistry[currentFunction.id];
-                const savedFunction = {...currentFunction};
-                delete savedFunction.id; // Remove temporary id property
-                functionsRegistry[functionId] = savedFunction;
-                
-                renderFunctionList();
-                
-                // Select the renamed item
-                document.querySelector(`.registry-item[data-id="${functionId}"]`).classList.add('active');
-            } else {
-                const savedFunction = {...currentFunction};
-                delete savedFunction.id; // Remove temporary id property
-                functionsRegistry[functionId] = savedFunction;
-            }
-            
-            alert('Function saved successfully!');
-        }
-
-        // Delete the current function
-        function deleteFunction() {
-            if (!currentFunction) return;
-            
-            if (confirm(`Are you sure you want to delete the function "${currentFunction.id}"?`)) {
-                delete functionsRegistry[currentFunction.id];
-                renderFunctionList();
-                
-                // Show empty state
-                emptyStateEl.style.display = 'block';
-                functionEditorEl.style.display = 'none';
-                currentFunction = null;
-            }
-        }
-
-        // Export function registry
-        function exportRegistry() {
-            const json = JSON.stringify(functionsRegistry, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'function-registry.json';
-            a.click();
-            
-            URL.revokeObjectURL(url);
-        }
-
-        // Import function registry
-        function importRegistry() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'application/json';
-            
-            input.onchange = e => {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = event => {
-                    try {
-                        const imported = JSON.parse(event.target.result);
-                        // Validate the imported data structure
-                        if (typeof imported !== 'object') {
-                            throw new Error('Invalid registry format');
-                        }
-                        
-                        // Confirm before overwriting
-                        if (confirm('This will replace your current function registry. Continue?')) {
-                            functionsRegistry = imported;
-                            renderFunctionList();
-                            
-                            // Show empty state
-                            emptyStateEl.style.display = 'block';
-                            functionEditorEl.style.display = 'none';
-                            currentFunction = null;
-                            
-                            alert('Registry imported successfully!');
-                        }
-                    } catch (err) {
-                        alert('Error importing registry: ' + err.message);
-                    }
-                };
-                reader.readAsText(file);
-            };
-            
-            input.click();
-        }
-
-        // Add type-specific prompt
-        function addTypeSpecificPrompt(type) {
-            if (!type) return;
-            
-            if (!currentFunction.typeSpecificPrompts) {
-                currentFunction.typeSpecificPrompts = {};
-            }
-            
-            if (!currentFunction.typeSpecificPrompts[type]) {
-                currentFunction.typeSpecificPrompts[type] = {
-                    additional: []
-                };
-            }
-            
-            // Create a new prompt template
-            const prompt = {
-                id: 'typePrompt' + Math.floor(Math.random() * 1000),
-                label: 'Type-Specific Prompt',
-                system: 'You are creating content for ' + type,
-                user: 'Write content specific to ' + type,
-                format: 'Type-Specific Content:\n{content}'
-            };
-            
-            currentFunction.typeSpecificPrompts[type].additional.push(prompt);
-            renderTypeSpecificPrompts(type);
-            updateJsonPreview();
-        }
-
-        // Update type-specific prompt
-        function updateTypeSpecificPrompt(type, index, input) {
-            const prompt = currentFunction.typeSpecificPrompts[type].additional[index];
-            
-            if (input.classList.contains('type-prompt-id')) {
-                prompt.id = input.value;
-            } else if (input.classList.contains('type-prompt-label')) {
-                prompt.label = input.value;
-            } else if (input.classList.contains('type-prompt-system')) {
-                prompt.system = input.value;
-            } else if (input.classList.contains('type-prompt-user')) {
-                prompt.user = input.value;
-            } else if (input.classList.contains('type-prompt-format')) {
-                prompt.format = input.value;
-            }
-            
-            updateJsonPreview();
-        }
-
-        // Preview rendered prompt with sample data
-        function previewRenderedPrompt(promptEl) {
-            if (!currentFunction || !currentFunction.fields) return;
-            
-            // Get the prompt data
-            const promptId = promptEl.querySelector('.prompt-id').value;
-            const promptSystem = promptEl.querySelector('.prompt-system').value;
-            const promptUser = promptEl.querySelector('.prompt-user').value;
-            
-            // Create sample data from fields
-            const sampleData = {};
-            currentFunction.fields.forEach(field => {
-                if (field.type === 'select' && field.options && field.options.length > 0) {
-                    sampleData[field.id] = field.options[0];
-                } else {
-                    sampleData[field.id] = `[Sample ${field.label}]`;
-                }
-            });
-            
-            // Add prevOutput for context
-            sampleData.prevOutput = "[Previous output would appear here]";
-            
-            // Render the prompts
-            let renderedSystem = promptSystem;
-            let renderedUser = promptUser;
-            
-            // Replace variables
-            Object.keys(sampleData).forEach(key => {
-                const regex = new RegExp(`{${key}}`, 'g');
-                renderedSystem = renderedSystem.replace(regex, sampleData[key]);
-                renderedUser = renderedUser.replace(regex, sampleData[key]);
-            });
-            
-            // Handle conditionals in a simple way
-            // This is a simplified version - a real implementation would need more logic
-            const conditionalRegex = /{(\w+), select, ([^}]*)}/g;
-            renderedSystem = renderedSystem.replace(conditionalRegex, (match, key, options) => {
-                // For this simple preview, just return the first option
-                const firstOption = options.split(' ')[0];
-                return `[Conditional: ${firstOption}]`;
-            });
-            
-            renderedUser = renderedUser.replace(conditionalRegex, (match, key, options) => {
-                const firstOption = options.split(' ')[0];
-                return `[Conditional: ${firstOption}]`;
-            });
-            
-            // Show the preview
-            let previewContainer = promptEl.querySelector('.prompt-preview-container');
-            
-            if (!previewContainer) {
-                previewContainer = document.createElement('div');
-                previewContainer.className = 'prompt-preview-container';
-                promptEl.appendChild(previewContainer);
-            }
-            
-            previewContainer.innerHTML = `
-                <h4>Preview for "${promptId}"</h4>
-                <div class="preview-box">
-                    <strong>System:</strong> ${renderedSystem}
-                </div>
-                <div class="preview-box">
-                    <strong>User:</strong> ${renderedUser}
-                </div>
+            item.innerHTML = `
+                ${functionId} ${badgeText}
             `;
-        }
+            
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.registry-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+                item.classList.add('active');
+                loadFunctionDetails(functionId);
+            });
+            
+            registryListEl.appendChild(item);
+        });
+    }
 
-        // Preview all prompts
-        function previewAllPrompts() {
-            document.querySelectorAll('#prompt-chain-container .prompt-chain-item').forEach(promptEl => {
-                previewRenderedPrompt(promptEl);
+    // Search functions
+    function searchFunctions(query) {
+        const normalizedQuery = query.toLowerCase().trim();
+        
+        document.querySelectorAll('.registry-item').forEach(item => {
+            const functionId = item.dataset.id.toLowerCase();
+            if (functionId.includes(normalizedQuery) || !normalizedQuery) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // Load function details into the editor
+    function loadFunctionDetails(functionId) {
+        currentFunction = JSON.parse(JSON.stringify(functionsRegistry[functionId])); // Deep clone to avoid reference issues
+        currentFunction.id = functionId;
+        
+        // Show editor, hide empty state
+        emptyStateEl.style.display = 'none';
+        functionEditorEl.style.display = 'block';
+        
+        // Populate basic info
+        functionIdEl.value = functionId;
+        functionUrlEl.value = currentFunction.url || '';
+        multiPromptEl.value = currentFunction.multiPrompt ? 'true' : 'false';
+        
+        // Populate fields
+        renderFields();
+        
+        // Populate prompt chain
+        renderPromptChain();
+        
+        // Update type selector and load type-specific prompts if applicable
+        updateTypeSelector();
+        
+        // If a type field is available, attempt to select the first type
+        const typeField = currentFunction.fields?.find(field => {
+            return field.type === 'select' && 
+                (field.id === 'type' || field.id.toLowerCase().includes('type'));
+        });
+        
+        if (typeField && typeField.options && typeField.options.length > 0) {
+            // Select the first type or the default value if available
+            const defaultType = currentFunction.defaults?.[typeField.id] || typeField.options[0];
+            typeSelectorEl.value = defaultType;
+            
+            // Trigger the change event to load type-specific prompts
+            if (currentFunction.typeSpecificPrompts && 
+                currentFunction.typeSpecificPrompts[defaultType]) {
+                renderTypeSpecificPrompts(defaultType);
+            }
+        }
+        
+        // Update JSON preview
+        updateJsonPreview();
+        
+        // Make sure all tabs are properly initialized
+        initializeTabs();
+    }
+
+    // Function to ensure all tabs are properly initialized
+    function initializeTabs() {
+        // Ensure the first tab is active initially
+        tabs.forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        const firstTab = tabs[0];
+        firstTab.classList.add('active');
+        
+        const firstContent = document.querySelector(`.tab-content[data-tab-content="${firstTab.dataset.tab}"]`);
+        if (firstContent) {
+            firstContent.classList.add('active');
+        }
+    }
+
+    // Render fields
+    function renderFields() {
+        fieldsContainerEl.innerHTML = '';
+        defaultsContainerEl.innerHTML = '';
+        
+        if (!currentFunction.fields || currentFunction.fields.length === 0) {
+            fieldsContainerEl.innerHTML = '<p>No fields added yet. Click "+ Add Field" to begin.</p>';
+            return;
+        }
+        
+        currentFunction.fields.forEach(field => {
+            const fieldEl = addFieldUI();
+            
+            // Populate field values
+            fieldEl.querySelector('.field-id').value = field.id || '';
+            fieldEl.querySelector('.field-label').value = field.label || '';
+            fieldEl.querySelector('.field-type').value = field.type || 'text';
+            
+            // Handle options for select fields
+            if (field.type === 'select' && field.options) {
+                const optionsContainer = fieldEl.querySelector('.options-container');
+                fieldEl.querySelector('.field-options').style.display = 'block';
+                
+                field.options.forEach(option => {
+                    const optionEl = addOptionUI(optionsContainer);
+                    optionEl.querySelector('.option-value').value = option;
+                });
+            }
+        });
+        
+        // Render defaults
+        renderDefaultValues();
+    }
+
+    // Separate function for rendering default values
+    function renderDefaultValues() {
+        defaultsContainerEl.innerHTML = '';
+        
+        if (!currentFunction.defaults || Object.keys(currentFunction.defaults).length === 0) {
+            defaultsContainerEl.innerHTML = '<p>No default values set. Default values will appear here when fields are added.</p>';
+            return;
+        }
+        
+        Object.keys(currentFunction.defaults).forEach(fieldId => {
+            const defaultValue = currentFunction.defaults[fieldId];
+            const fieldObj = currentFunction.fields.find(f => f.id === fieldId);
+            
+            if (!fieldObj) return; // Skip if field no longer exists
+            
+            const defaultEl = document.createElement('div');
+            defaultEl.className = 'form-group';
+            defaultEl.innerHTML = `
+                <label for="default-${fieldId}">${fieldObj.label || fieldId} Default Value</label>
+                ${fieldObj && fieldObj.type === 'select' 
+                    ? `<select id="default-${fieldId}" class="default-value" data-field="${fieldId}">
+                        ${fieldObj.options.map(opt => `
+                            <option value="${opt}" ${defaultValue === opt ? 'selected' : ''}>${opt}</option>
+                        `).join('')}
+                       </select>`
+                    : `<input type="text" id="default-${fieldId}" class="default-value" data-field="${fieldId}" value="${defaultValue}">`
+                }
+            `;
+            
+            defaultsContainerEl.appendChild(defaultEl);
+        });
+    }
+
+    // Render prompt chain
+    function renderPromptChain() {
+        promptChainContainerEl.innerHTML = '';
+        
+        if (!currentFunction.promptChain) {
+            currentFunction.promptChain = [];
+        }
+        
+        if (currentFunction.promptChain.length === 0) {
+            promptChainContainerEl.innerHTML = '<p>No prompts added yet. Click "+ Add Prompt" to begin.</p>';
+        } else {
+            currentFunction.promptChain.forEach(prompt => {
+                const promptEl = addPromptUI();
+                
+                // Populate prompt values
+                promptEl.querySelector('.prompt-id').value = prompt.id || '';
+                promptEl.querySelector('.prompt-label').value = prompt.label || '';
+                promptEl.querySelector('.prompt-system').value = prompt.system || '';
+                promptEl.querySelector('.prompt-user').value = prompt.user || '';
+                promptEl.querySelector('.prompt-format').value = prompt.format || '';
+                
+                // Add preview button event listener
+                promptEl.querySelector('.preview-prompt-btn').addEventListener('click', () => {
+                    previewRenderedPrompt(promptEl);
+                });
             });
         }
+    }
 
-        // Validate function
-        function validateFunction() {
-            const errors = [];
-            
-            // Check basic info
-            if (!functionIdEl.value) {
-                errors.push('Function ID is required');
+    // Add field UI element
+    function addFieldUI() {
+        const template = document.getElementById('field-template');
+        const fieldEl = template.content.cloneNode(true);
+        const container = fieldsContainerEl.appendChild(fieldEl).querySelector('.field-row').parentNode;
+        
+        // Add event listeners
+        const typeSelect = container.querySelector('.field-type');
+        const optionsContainer = container.querySelector('.field-options');
+        
+        typeSelect.addEventListener('change', () => {
+            if (typeSelect.value === 'select') {
+                optionsContainer.style.display = 'block';
+            } else {
+                optionsContainer.style.display = 'none';
             }
+        });
+        
+        container.querySelector('.remove-field').addEventListener('click', () => {
+            container.remove();
+            updateModel();
+        });
+        
+        container.querySelector('.add-option').addEventListener('click', () => {
+            addOptionUI(container.querySelector('.options-container'));
+            updateModel();
+        });
+        
+        return container;
+    }
+
+    // Add option UI element
+    function addOptionUI(container) {
+        const template = document.getElementById('option-template');
+        const optionEl = template.content.cloneNode(true);
+        const optionContainer = container.appendChild(optionEl).querySelector('.field-row');
+        
+        optionContainer.querySelector('.remove-option').addEventListener('click', () => {
+            optionContainer.remove();
+            updateModel();
+        });
+        
+        return optionContainer;
+    }
+
+    // Add prompt UI element
+    function addPromptUI() {
+        const template = document.getElementById('prompt-template');
+        const promptEl = template.content.cloneNode(true);
+        const container = promptChainContainerEl.appendChild(promptEl).querySelector('.prompt-chain-item');
+        
+        container.querySelector('.remove-btn').addEventListener('click', () => {
+            container.remove();
+            updateModel();
+        });
+        
+        return container;
+    }
+
+    // Update type selector
+    function updateTypeSelector() {
+        typeSelectorEl.innerHTML = '<option value="">Select a type...</option>';
+        
+        const typeField = currentFunction.fields?.find(field => {
+            return field.type === 'select' && 
+                (field.id === 'type' || field.id.toLowerCase().includes('type'));
+        });
+        
+        if (typeField && typeField.options) {
+            typeField.options.forEach(option => {
+                const optEl = document.createElement('option');
+                optEl.value = option;
+                optEl.textContent = option;
+                typeSelectorEl.appendChild(optEl);
+            });
             
-            if (!functionUrlEl.value) {
-                errors.push('URL path is required');
-            }
-            
-            // Check fields
-            const fieldIds = new Set();
-            document.querySelectorAll('#fields-container > div').forEach(fieldContainer => {
-                const fieldId = fieldContainer.querySelector('.field-id').value;
-                const fieldLabel = fieldContainer.querySelector('.field-label').value;
-                
-                if (!fieldId) {
-                    errors.push('Field ID is required for all fields');
-                } else if (fieldIds.has(fieldId)) {
-                    errors.push(`Duplicate field ID: ${fieldId}`);
-                } else {
-                    fieldIds.add(fieldId);
-                }
-                
-                if (!fieldLabel) {
-                    errors.push(`Label is required for field: ${fieldId}`);
-                }
-                
-                // Check select fields have options
-                const fieldType = fieldContainer.querySelector('.field-type').value;
-                if (fieldType === 'select') {
-                    const optionsCount = fieldContainer.querySelectorAll('.option-value').length;
-                    if (optionsCount === 0) {
-                        errors.push(`Select field "${fieldId}" needs at least one option`);
+            // If there are type-specific prompts, highlight the tab
+            if (currentFunction.typeSpecificPrompts) {
+                const typeSpecificTab = document.querySelector('.tab[data-tab="typeSpecific"]');
+                if (typeSpecificTab) {
+                    typeSpecificTab.style.position = 'relative';
+                    if (!typeSpecificTab.querySelector('.notification-dot')) {
+                        const notificationDot = document.createElement('span');
+                        notificationDot.className = 'notification-dot';
+                        notificationDot.style.cssText = `
+                            position: absolute;
+                            top: 5px;
+                            right: 5px;
+                            width: 8px;
+                            height: 8px;
+                            background-color: var(--primary);
+                            border-radius: 50%;
+                        `;
+                        typeSpecificTab.appendChild(notificationDot);
                     }
                 }
-            });
-            
-            // Check prompt chain
-            const promptIds = new Set();
-            document.querySelectorAll('#prompt-chain-container .prompt-chain-item').forEach(promptContainer => {
-                const promptId = promptContainer.querySelector('.prompt-id').value;
-                
-                if (!promptId) {
-                    errors.push('Prompt ID is required for all prompts');
-                } else if (promptIds.has(promptId)) {
-                    errors.push(`Duplicate prompt ID: ${promptId}`);
-                } else {
-                    promptIds.add(promptId);
-                }
-            });
-            
-            return errors;
+            }
+        } else {
+            typeSpecificContainerEl.innerHTML = '<p>No type field found. To use type-specific prompts, add a select field with "type" in its ID.</p>';
         }
+    }
+
+    // Render type-specific prompts
+    function renderTypeSpecificPrompts(type) {
+        typeSpecificContainerEl.innerHTML = '';
+        
+        if (!type) {
+            typeSpecificContainerEl.innerHTML = '<p>Please select a type to view or add type-specific prompts.</p>';
+            return;
+        }
+        
+        if (!currentFunction.typeSpecificPrompts || 
+            !currentFunction.typeSpecificPrompts[type] ||
+            !currentFunction.typeSpecificPrompts[type].additional ||
+            currentFunction.typeSpecificPrompts[type].additional.length === 0) {
+            
+            typeSpecificContainerEl.innerHTML = `
+                <p>No type-specific prompts for "${type}" yet.</p>
+                <p>Click "+ Add Type-Specific Prompt" to create specialized prompts that will only be used when this type is selected.</p>
+            `;
+        } else {
+            const prompts = currentFunction.typeSpecificPrompts[type].additional;
+            
+            prompts.forEach((prompt, index) => {
+                const template = document.getElementById('type-prompt-template');
+                const promptEl = template.content.cloneNode(true);
+                const container = typeSpecificContainerEl.appendChild(promptEl).querySelector('.prompt-chain-item');
+                
+                // Populate values
+                container.querySelector('.type-prompt-id').value = prompt.id || '';
+                container.querySelector('.type-prompt-id').dataset.index = index;
+                
+                container.querySelector('.type-prompt-label').value = prompt.label || '';
+                container.querySelector('.type-prompt-label').dataset.index = index;
+                
+                container.querySelector('.type-prompt-system').value = prompt.system || '';
+                container.querySelector('.type-prompt-system').dataset.index = index;
+                
+                container.querySelector('.type-prompt-user').value = prompt.user || '';
+                container.querySelector('.type-prompt-user').dataset.index = index;
+                
+                container.querySelector('.type-prompt-format').value = prompt.format || '';
+                container.querySelector('.type-prompt-format').dataset.index = index;
+                
+                // Add event listeners
+                container.querySelector('.remove-btn').addEventListener('click', () => {
+                    currentFunction.typeSpecificPrompts[type].additional.splice(index, 1);
+                    renderTypeSpecificPrompts(type);
+                    updateJsonPreview();
+                });
+                
+                // Input change events
+                container.querySelectorAll('input, textarea').forEach(input => {
+                    input.addEventListener('input', () => {
+                        updateTypeSpecificPrompt(type, index, input);
+                    });
+                });
+            });
+        }
+    }
+
+    // Update JSON preview
+    function updateJsonPreview() {
+        const json = JSON.stringify(currentFunction, null, 2);
+        jsonPreviewEl.textContent = json;
+    }
+
+    // Update the data model from UI
+    function updateModel() {
+        if (!currentFunction) return;
+        
+        // Update basic info
+        currentFunction.id = functionIdEl.value;
+        currentFunction.url = functionUrlEl.value;
+        currentFunction.multiPrompt = multiPromptEl.value === 'true';
+        
+        // Update fields
+        currentFunction.fields = [];
+        document.querySelectorAll('#fields-container > div').forEach(fieldContainer => {
+            const fieldId = fieldContainer.querySelector('.field-id').value;
+            const fieldLabel = fieldContainer.querySelector('.field-label').value;
+            const fieldType = fieldContainer.querySelector('.field-type').value;
+            
+            if (!fieldId) return;
+            
+            const field = {
+                id: fieldId,
+                label: fieldLabel,
+                type: fieldType
+            };
+            
+            // Add options for select fields
+            if (fieldType === 'select') {
+                const options = [];
+                fieldContainer.querySelectorAll('.option-value').forEach(optionEl => {
+                    if (optionEl.value) {
+                        options.push(optionEl.value);
+                    }
+                });
+                
+                if (options.length) {
+                    field.options = options;
+                }
+            }
+            
+            currentFunction.fields.push(field);
+        });
+        
+        // Update defaults
+        currentFunction.defaults = {};
+        document.querySelectorAll('.default-value').forEach(defaultEl => {
+            const fieldId = defaultEl.dataset.field;
+            currentFunction.defaults[fieldId] = defaultEl.value;
+        });
+        
+        // Update prompt chain
+        currentFunction.promptChain = [];
+        document.querySelectorAll('#prompt-chain-container .prompt-chain-item').forEach(promptContainer => {
+            const promptId = promptContainer.querySelector('.prompt-id').value;
+            const promptLabel = promptContainer.querySelector('.prompt-label').value;
+            const promptSystem = promptContainer.querySelector('.prompt-system').value;
+            const promptUser = promptContainer.querySelector('.prompt-user').value;
+            const promptFormat = promptContainer.querySelector('.prompt-format').value;
+            
+            if (!promptId) return;
+            
+            currentFunction.promptChain.push({
+                id: promptId,
+                label: promptLabel,
+                system: promptSystem,
+                user: promptUser,
+                format: promptFormat
+            });
+        });
+        
+        // Update JSON preview
+        updateJsonPreview();
+    }
+
+    // Create a new function
+    function createNewFunction() {
+        const newId = 'new-function-' + Math.floor(Math.random() * 1000);
+        functionsRegistry[newId] = {
+            url: '/editor/' + newId,
+            multiPrompt: true,
+            fields: [],
+            defaults: {},
+            promptChain: []
+        };
+        
+        renderFunctionList();
+        loadFunctionDetails(newId);
+        
+        // Select the new item in the list
+        document.querySelector(`.registry-item[data-id="${newId}"]`).classList.add('active');
+    }
+
+    // Save the current function
+    function saveFunction() {
+        updateModel();
+        
+        const functionId = functionIdEl.value;
+        if (!functionId) {
+            alert('Function ID is required');
+            return;
+        }
+        
+        // Validate function
+        const errors = validateFunction();
+        if (errors.length > 0) {
+            alert('Validation failed:\n- ' + errors.join('\n- '));
+            return;
+        }
+        
+        // If ID changed, need to update the registry
+        if (currentFunction.id !== functionId) {
+            delete functionsRegistry[currentFunction.id];
+            const savedFunction = {...currentFunction};
+            delete savedFunction.id; // Remove temporary id property
+            functionsRegistry[functionId] = savedFunction;
+            
+            renderFunctionList();
+            
+            // Select the renamed item
+            document.querySelector(`.registry-item[data-id="${functionId}"]`).classList.add('active');
+        } else {
+            const savedFunction = {...currentFunction};
+            delete savedFunction.id; // Remove temporary id property
+            functionsRegistry[functionId] = savedFunction;
+        }
+        
+        alert('Function saved successfully!');
+    }
+
+    // Delete the current function
+    function deleteFunction() {
+        if (!currentFunction) return;
+        
+        if (confirm(`Are you sure you want to delete the function "${currentFunction.id}"?`)) {
+            delete functionsRegistry[currentFunction.id];
+            renderFunctionList();
+            
+            // Show empty state
+            emptyStateEl.style.display = 'block';
+            functionEditorEl.style.display = 'none';
+            currentFunction = null;
+        }
+    }
+
+    // Export function registry
+    function exportRegistry() {
+        const json = JSON.stringify(functionsRegistry, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'function-registry.json';
+        a.click();
+        
+        URL.revokeObjectURL(url);
+    }
+
+    // Import function registry
+    function importRegistry() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        
+        input.onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = event => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    // Validate the imported data structure
+                    if (typeof imported !== 'object') {
+                        throw new Error('Invalid registry format');
+                    }
+                    
+                    // Confirm before overwriting
+                    if (confirm('This will replace your current function registry. Continue?')) {
+                        functionsRegistry = imported;
+                        renderFunctionList();
+                        
+                        // Show empty state
+                        emptyStateEl.style.display = 'block';
+                        functionEditorEl.style.display = 'none';
+                        currentFunction = null;
+                        
+                        alert('Registry imported successfully!');
+                    }
+                } catch (err) {
+                    alert('Error importing registry: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    }
+
+    // Add type-specific prompt
+    function addTypeSpecificPrompt(type) {
+        if (!type) return;
+        
+        if (!currentFunction.typeSpecificPrompts) {
+            currentFunction.typeSpecificPrompts = {};
+        }
+        
+        if (!currentFunction.typeSpecificPrompts[type]) {
+            currentFunction.typeSpecificPrompts[type] = {
+                additional: []
+            };
+        }
+        
+        // Create a new prompt template
+        const prompt = {
+            id: 'typePrompt' + Math.floor(Math.random() * 1000),
+            label: 'Type-Specific Prompt',
+            system: 'You are creating content for ' + type,
+            user: 'Write content specific to ' + type,
+            format: 'Type-Specific Content:\n{content}'
+        };
+        
+        currentFunction.typeSpecificPrompts[type].additional.push(prompt);
+        renderTypeSpecificPrompts(type);
+        updateJsonPreview();
+    }
+
+    // Update type-specific prompt
+    function updateTypeSpecificPrompt(type, index, input) {
+        const prompt = currentFunction.typeSpecificPrompts[type].additional[index];
+        
+        if (input.classList.contains('type-prompt-id')) {
+            prompt.id = input.value;
+        } else if (input.classList.contains('type-prompt-label')) {
+            prompt.label = input.value;
+        } else if (input.classList.contains('type-prompt-system')) {
+            prompt.system = input.value;
+        } else if (input.classList.contains('type-prompt-user')) {
+            prompt.user = input.value;
+        } else if (input.classList.contains('type-prompt-format')) {
+            prompt.format = input.value;
+        }
+        
+        updateJsonPreview();
+    }
+
+    // Preview rendered prompt with sample data
+    function previewRenderedPrompt(promptEl) {
+        if (!currentFunction || !currentFunction.fields) return;
+        
+        // Get the prompt data
+        const promptId = promptEl.querySelector('.prompt-id').value;
+        const promptSystem = promptEl.querySelector('.prompt-system').value;
+        const promptUser = promptEl.querySelector('.prompt-user').value;
+        
+        // Create sample data from fields
+        const sampleData = {};
+        currentFunction.fields.forEach(field => {
+            if (field.type === 'select' && field.options && field.options.length > 0) {
+                sampleData[field.id] = field.options[0];
+            } else {
+                sampleData[field.id] = `[Sample ${field.label}]`;
+            }
+        });
+        
+        // Add prevOutput for context
+        sampleData.prevOutput = "[Previous output would appear here]";
+        
+        // Render the prompts
+        let renderedSystem = promptSystem;
+        let renderedUser = promptUser;
+        
+        // Replace variables
+        Object.keys(sampleData).forEach(key => {
+            const regex = new RegExp(`{${key}}`, 'g');
+            renderedSystem = renderedSystem.replace(regex, sampleData[key]);
+            renderedUser = renderedUser.replace(regex, sampleData[key]);
+        });
+        
+        // Handle conditionals in a simple way
+        // This is a simplified version - a real implementation would need more logic
+        const conditionalRegex = /{(\w+), select, ([^}]*)}/g;
+        renderedSystem = renderedSystem.replace(conditionalRegex, (match, key, options) => {
+            // For this simple preview, just return the first option
+            const firstOption = options.split(' ')[0];
+            return `[Conditional: ${firstOption}]`;
+        });
+        
+        renderedUser = renderedUser.replace(conditionalRegex, (match, key, options) => {
+            const firstOption = options.split(' ')[0];
+            return `[Conditional: ${firstOption}]`;
+        });
+        
+        // Show the preview
+        let previewContainer = promptEl.querySelector('.prompt-preview-container');
+        
+        if (!previewContainer) {
+            previewContainer = document.createElement('div');
+            previewContainer.className = 'prompt-preview-container';
+            promptEl.appendChild(previewContainer);
+        }
+        
+        previewContainer.innerHTML = `
+            <h4>Preview for "${promptId}"</h4>
+            <div class="preview-box">
+                <strong>System:</strong> ${renderedSystem}
+            </div>
+            <div class="preview-box">
+                <strong>User:</strong> ${renderedUser}
+            </div>
+        `;
+    }
+
+    // Preview all prompts
+    function previewAllPrompts() {
+        document.querySelectorAll('#prompt-chain-container .prompt-chain-item').forEach(promptEl => {
+            previewRenderedPrompt(promptEl);
+        });
+    }
+
+    // Validate function
+    function validateFunction() {
+        const errors = [];
+        
+        // Check basic info
+        if (!functionIdEl.value) {
+            errors.push('Function ID is required');
+        }
+        
+        if (!functionUrlEl.value) {
+            errors.push('URL path is required');
+        }
+        
+        // Check fields
+        const fieldIds = new Set();
+        document.querySelectorAll('#fields-container > div').forEach(fieldContainer => {
+            const fieldId = fieldContainer.querySelector('.field-id').value;
+            const fieldLabel = fieldContainer.querySelector('.field-label').value;
+            
+            if (!fieldId) {
+                errors.push('Field ID is required for all fields');
+            } else if (fieldIds.has(fieldId)) {
+                errors.push(`Duplicate field ID: ${fieldId}`);
+            } else {
+                fieldIds.add(fieldId);
+            }
+            
+            if (!fieldLabel) {
+                errors.push(`Label is required for field: ${fieldId}`);
+            }
+            
+            // Check select fields have options
+            const fieldType = fieldContainer.querySelector('.field-type').value;
+            if (fieldType === 'select') {
+                const optionsCount = fieldContainer.querySelectorAll('.option-value').length;
+                if (optionsCount === 0) {
+                    errors.push(`Select field "${fieldId}" needs at least one option`);
+                }
+            }
+        });
+        
+        // Check prompt chain
+        const promptIds = new Set();
+        document.querySelectorAll('#prompt-chain-container .prompt-chain-item').forEach(promptContainer => {
+            const promptId = promptContainer.querySelector('.prompt-id').value;
+            
+            if (!promptId) {
+                errors.push('Prompt ID is required for all prompts');
+            } else if (promptIds.has(promptId)) {
+                errors.push(`Duplicate prompt ID: ${promptId}`);
+            } else {
+                promptIds.add(promptId);
+            }
+        });
+        
+        return errors;
+    }
 
         // Generate documentation for the function
         function generateDocumentation() {
