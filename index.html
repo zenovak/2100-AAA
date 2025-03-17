@@ -718,6 +718,42 @@ function loadFunctionDetails(functionId) {
     // Switch to first tab
     tabs[0].click();
 }
+     // Fix for addFieldUI function to properly append and return elements
+function addFieldUI() {
+    const template = document.getElementById('field-template');
+    const fieldEl = template.content.cloneNode(true);
+    fieldsContainerEl.appendChild(fieldEl);
+    
+    // Get the newly added field container (the parent div that was just appended)
+    const container = fieldsContainerEl.lastElementChild;
+    
+    // Add event listeners
+    const typeSelect = container.querySelector('.field-type');
+    const optionsContainer = container.querySelector('.field-options');
+    
+    typeSelect.addEventListener('change', () => {
+        if (typeSelect.value === 'select') {
+            optionsContainer.style.display = 'block';
+        } else {
+            optionsContainer.style.display = 'none';
+        }
+    });
+    
+    container.querySelector('.remove-field').addEventListener('click', () => {
+        container.remove();
+        updateModel();
+    });
+    
+    container.querySelector('.add-option').addEventListener('click', () => {
+        addOptionUI(container.querySelector('.options-container'));
+        updateModel();
+    });
+    
+    return container;
+}
+
+
+// Fix for renderFields function to use the corrected addFieldUI
 function renderFields() {
     fieldsContainerEl.innerHTML = '';
     defaultsContainerEl.innerHTML = '';
@@ -829,33 +865,39 @@ function renderFields() {
             return container;
         }
 
-        // Add option UI element
-        function addOptionUI(container) {
-            const template = document.getElementById('option-template');
-            const optionEl = template.content.cloneNode(true);
-            const optionContainer = container.appendChild(optionEl).querySelector('.field-row');
-            
-            optionContainer.querySelector('.remove-option').addEventListener('click', () => {
-                optionContainer.remove();
-                updateModel();
-            });
-            
-            return optionContainer;
-        }
+// Fix for addOptionUI function
+function addOptionUI(container) {
+    const template = document.getElementById('option-template');
+    const optionEl = template.content.cloneNode(true);
+    container.appendChild(optionEl);
+    
+    // Get the newly added option container
+    const optionContainer = container.lastElementChild;
+    
+    optionContainer.querySelector('.remove-option').addEventListener('click', () => {
+        optionContainer.remove();
+        updateModel();
+    });
+    
+    return optionContainer;
+}
 
-        // Add prompt UI element
-        function addPromptUI() {
-            const template = document.getElementById('prompt-template');
-            const promptEl = template.content.cloneNode(true);
-            const container = promptChainContainerEl.appendChild(promptEl).querySelector('.prompt-chain-item');
-            
-            container.querySelector('.remove-btn').addEventListener('click', () => {
-                container.remove();
-                updateModel();
-            });
-            
-            return container;
-        }
+// Fix for addPromptUI function
+function addPromptUI() {
+    const template = document.getElementById('prompt-template');
+    const promptEl = template.content.cloneNode(true);
+    promptChainContainerEl.appendChild(promptEl);
+    
+    // Get the newly added prompt container
+    const container = promptChainContainerEl.lastElementChild;
+    
+    container.querySelector('.remove-btn').addEventListener('click', () => {
+        container.remove();
+        updateModel();
+    });
+    
+    return container;
+}
 function updateTypeSelector() {
     typeSelectorEl.innerHTML = '<option value="">Select a type...</option>';
     
