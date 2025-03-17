@@ -161,4 +161,182 @@ The API automatically exposes any endpoints registered through the `augment_api`
 
 ## Additional Custom Endpoints
 
-As new functions are registered with the `augment_api` decorator, they will automatically be exposed as endpoints in the API.
+As new functions are registered with the `augment_api` decorator, they will automatically be exposed as endpoints in the API
+
+
+
+# Universal Model and Multi-Agent Sequence API Guide
+
+This guide explains how to use the Universal Model and Multi-Agent Sequence features of the Agent of All Agents API.
+
+## Table of Contents
+- [Universal Model](#universal-model)
+- [Agent Search](#agent-search)
+- [Multi-Agent Processing](#multi-agent-processing)
+- [Predefined Sequences](#predefined-sequences)
+- [Integration with OpenAI API](#integration-with-openai-api)
+- [Examples](#examples)
+
+## Universal Model
+
+The Universal Model automatically detects the appropriate agent or task type for a given prompt and routes the request accordingly.
+
+### Using the Universal Model
+
+**Endpoint**: `/v1/completions`  
+**Method**: POST  
+**Model**: Use `"universal"` or `"auto"`
+
+**Request**:
+```json
+{
+  "model": "universal",
+  "prompt": "Write a professional tweet about our new product launch",
+  "max_tokens": 100,
+  "temperature": 0.7
+}
+```
+
+**Response**:
+```json
+{
+  "id": "cmpl-abc123",
+  "object": "text_completion",
+  "created": 1684936751,
+  "model": "universal",
+  "choices": [
+    {
+      "text": "Excited to announce the launch of our new product...",
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 10,
+    "completion_tokens": 12,
+    "total_tokens": 22
+  }
+}
+```
+
+## Agent Search
+
+The Agent Search feature identifies the most appropriate agents or tasks for a given prompt.
+
+### Searching for Agents
+
+**Endpoint**: `/v1/agents/search`  
+**Method**: POST
+
+**Request**:
+```json
+{
+  "prompt": "Write a tweet about our new product launch",
+  "max_results": 3,
+  "min_confidence": 0.2
+}
+```
+
+**Response**:
+```json
+{
+  "matches": [
+    {
+      "task_id": "tweet",
+      "confidence": 0.85,
+      "matched_keywords": ["tweet", "write"],
+      "parameters": {
+        "subject": "new product launch",
+        "style": "Professional"
+      },
+      "task_type": "tweet"
+    },
+    {
+      "task_id": "text_processor",
+      "confidence": 0.42,
+      "matched_keywords": ["write"],
+      "parameters": {
+        "text": "Write a tweet about our new product launch",
+        "operation": "generate"
+      },
+      "task_type": "agent"
+    }
+  ]
+}
+```
+
+## Multi-Agent Processing
+
+Multi-Agent Processing allows using multiple agents in sequence to process a single request.
+
+### Running Multi-Agent Processing
+
+**Endpoint**: `/v1/multi-agent/run`  
+**Method**: POST
+
+**Request**:
+```json
+{
+  "prompt": "Research AI trends, outline key points, and write a blog post",
+  "auto_sequence": true,
+  "max_tokens": 1000
+}
+```
+
+**Request with Explicit Sequence**:
+```json
+{
+  "prompt": "Research AI trends for a blog post",
+  "agent_sequence": ["researcher", "outliner", "writer"],
+  "auto_sequence": false
+}
+```
+
+**Response**:
+```json
+{
+  "id": "multiagent-abc123",
+  "result": "# The Future of AI Trends\n\nArtificial intelligence continues to evolve...",
+  "agents_used": [
+    {
+      "agent_id": "researcher",
+      "parameters": {
+        "text": "Research AI trends for a blog post"
+      },
+      "step": 1
+    },
+    {
+      "agent_id": "outliner",
+      "parameters": {
+        "text": "AI trends include: 1. Generative AI, 2. AI Automation..."
+      },
+      "step": 2
+    },
+    {
+      "agent_id": "writer",
+      "parameters": {
+        "text": "# Outline: The Future of AI\n1. Introduction\n2. Generative AI..."
+      },
+      "step": 3
+    }
+  ],
+  "tokens": {
+    "prompt_tokens": 8,
+    "completion_tokens": 120,
+    "total_tokens": 128
+  }
+}
+```
+
+## Predefined Sequences
+
+Predefined sequences allow executing a fixed series of agents in a standardized workflow.
+
+### Listing Available Sequences
+
+**Endpoint**: `/v1/sequences`  
+**Method**: GET
+
+**Response**:
+```json
