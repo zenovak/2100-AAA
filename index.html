@@ -676,90 +676,102 @@
                 }
             });
         }
-
-        // Load function details into the editor
-        function loadFunctionDetails(functionId) {
-            currentFunction = functionsRegistry[functionId];
-            currentFunction.id = functionId;
-            
-            // Show editor, hide empty state
-            emptyStateEl.style.display = 'none';
-            functionEditorEl.style.display = 'block';
-            
-            // Populate basic info
-            functionIdEl.value = functionId;
-            functionUrlEl.value = currentFunction.url || '';
-            multiPromptEl.value = currentFunction.multiPrompt ? 'true' : 'false';
-            
-            // Populate fields
-            renderFields();
-            
-            // Populate prompt chain
-            renderPromptChain();
-            
-            // Update type selector
-            updateTypeSelector();
-            
-            // Update JSON preview
-            updateJsonPreview();
-            
-            // Switch to first tab
-            tabs[0].click();
+function loadFunctionDetails(functionId) {
+    currentFunction = functionsRegistry[functionId];
+    currentFunction.id = functionId;
+    
+    // Show editor, hide empty state
+    emptyStateEl.style.display = 'none';
+    functionEditorEl.style.display = 'block';
+    
+    // Populate basic info
+    functionIdEl.value = functionId;
+    functionUrlEl.value = currentFunction.url || '';
+    multiPromptEl.value = currentFunction.multiPrompt ? 'true' : 'false';
+    
+    // Populate fields
+    renderFields();
+    
+    // Populate prompt chain
+    renderPromptChain();
+    
+    // Update type selector
+    updateTypeSelector();
+    
+    // Render type-specific prompts if any exist
+    if (currentFunction.typeSpecificPrompts) {
+        const typeField = currentFunction.fields.find(field => 
+            field.type === 'select' && 
+            (field.id === 'type' || field.id.toLowerCase().includes('type'))
+        );
+        
+        if (typeField && typeField.options && typeField.options.length > 0) {
+            const defaultType = currentFunction.defaults?.[typeField.id] || typeField.options[0];
+            typeSelectorEl.value = defaultType;
+            renderTypeSpecificPrompts(defaultType);
         }
-
-        // Render fields
-        function renderFields() {
-            fieldsContainerEl.innerHTML = '';
-            defaultsContainerEl.innerHTML = '';
+    }
+    
+    // Update JSON preview
+    updateJsonPreview();
+    
+    // Switch to first tab
+    tabs[0].click();
+}
+function renderFields() {
+    fieldsContainerEl.innerHTML = '';
+    defaultsContainerEl.innerHTML = '';
+    
+    if (!currentFunction.fields) {
+        currentFunction.fields = [];
+    }
+    
+    currentFunction.fields.forEach(field => {
+        const fieldEl = addFieldUI();
+        
+        // Populate field values
+        fieldEl.querySelector('.field-id').value = field.id || '';
+        fieldEl.querySelector('.field-label').value = field.label || '';
+        fieldEl.querySelector('.field-type').value = field.type || 'text';
+        
+        // Handle options for select fields
+        if (field.type === 'select' && field.options) {
+            const optionsContainer = fieldEl.querySelector('.options-container');
+            fieldEl.querySelector('.field-options').style.display = 'block';
             
-            if (!currentFunction.fields) {
-                currentFunction.fields = [];
-            }
-            
-            currentFunction.fields.forEach(field => {
-                const fieldEl = addFieldUI();
-                
-                // Populate field values
-                fieldEl.querySelector('.field-id').value = field.id || '';
-                fieldEl.querySelector('.field-label').value = field.label || '';
-                fieldEl.querySelector('.field-type').value = field.type || 'text';
-                
-                // Handle options for select fields
-                if (field.type === 'select' && field.options) {
-                    const optionsContainer = fieldEl.querySelector('.options-container');
-                    fieldEl.querySelector('.field-options').style.display = 'block';
-                    
-                    field.options.forEach(option => {
-                        const optionEl = addOptionUI(optionsContainer);
-                        optionEl.querySelector('.option-value').value = option;
-                    });
-                }
+            field.options.forEach(option => {
+                const optionEl = addOptionUI(optionsContainer);
+                optionEl.querySelector('.option-value').value = option;
             });
-            
-            // Render defaults
-            if (currentFunction.defaults) {
-                Object.keys(currentFunction.defaults).forEach(fieldId => {
-                    const defaultValue = currentFunction.defaults[fieldId];
-                    const fieldObj = currentFunction.fields.find(f => f.id === fieldId);
-                    
-                    const defaultEl = document.createElement('div');
-                    defaultEl.className = 'form-group';
-                    defaultEl.innerHTML = `
-                        <label for="default-${fieldId}">${fieldId} Default Value</label>
-                        ${fieldObj && fieldObj.type === 'select' 
-                            ? `<select id="default-${fieldId}" class="default-value" data-field="${fieldId}">
-                                ${fieldObj.options.map(opt => `
-                                    <option value="${opt}" ${defaultValue === opt ? 'selected' : ''}>${opt}</option>
-                                `).join('')}
-                               </select>`
-                            : `<input type="text" id="default-${fieldId}" class="default-value" data-field="${fieldId}" value="${defaultValue}">`
-                        }
-                    `;
-                    
-                    defaultsContainerEl.appendChild(defaultEl);
-                });
-            }
         }
+    });
+    
+    // Render defaults
+    if (currentFunction.defaults) {
+        Object.keys(currentFunction.defaults).forEach(fieldId => {
+            const defaultValue = currentFunction.defaults[fieldId];
+            const fieldObj = currentFunction.fields.find(f => f.id === fieldId);
+            
+            if (!fieldObj) return; // Skip if field doesn't exist
+            
+            const defaultEl = document.createElement('div');
+            defaultEl.className = 'form-group';
+            defaultEl.innerHTML = `
+                <label for="default-${fieldId}">${fieldObj.label || fieldId} Default Value</label>
+                ${fieldObj && fieldObj.type === 'select' 
+                    ? `<select id="default-${fieldId}" class="default-value" data-field="${fieldId}">
+                        ${fieldObj.options.map(opt => `
+                            <option value="${opt}" ${defaultValue === opt ? 'selected' : ''}>${opt}</option>
+                        `).join('')}
+                       </select>`
+                    : `<input type="text" id="default-${fieldId}" class="default-value" data-field="${fieldId}" value="${defaultValue || ''}">`
+                }
+            `;
+            
+            defaultsContainerEl.appendChild(defaultEl);
+        });
+    }
+}
 
         // Render prompt chain
         function renderPromptChain() {
@@ -844,25 +856,30 @@
             
             return container;
         }
-
-        // Update type selector
-        function updateTypeSelector() {
-            typeSelectorEl.innerHTML = '<option value="">Select a type...</option>';
-            
-            const typeField = currentFunction.fields.find(field => {
-                return field.type === 'select' && 
-                    (field.id === 'type' || field.id.toLowerCase().includes('type'));
+function updateTypeSelector() {
+    typeSelectorEl.innerHTML = '<option value="">Select a type...</option>';
+    
+    // Look for any field that might be a type field (more flexible approach)
+    const typeFields = currentFunction.fields.filter(field => {
+        return field.type === 'select' && 
+            (field.id === 'type' || 
+             field.id.toLowerCase().includes('type') || 
+             field.label.toLowerCase().includes('type'));
+    });
+    
+    if (typeFields.length > 0) {
+        const typeField = typeFields[0]; // Use the first matching type field
+        
+        if (typeField && typeField.options) {
+            typeField.options.forEach(option => {
+                const optEl = document.createElement('option');
+                optEl.value = option;
+                optEl.textContent = option;
+                typeSelectorEl.appendChild(optEl);
             });
-            
-            if (typeField && typeField.options) {
-                typeField.options.forEach(option => {
-                    const optEl = document.createElement('option');
-                    optEl.value = option;
-                    optEl.textContent = option;
-                    typeSelectorEl.appendChild(optEl);
-                });
-            }
         }
+    }
+}
 
         // Update JSON preview
         function updateJsonPreview() {
@@ -1025,48 +1042,70 @@
             
             URL.revokeObjectURL(url);
         }
-
-        // Import function registry
-        function importRegistry() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'application/json';
-            
-            input.onchange = e => {
-                const file = e.target.files[0];
-                if (!file) return;
+function importRegistry() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = event => {
+            try {
+                let text = event.target.result;
                 
-                const reader = new FileReader();
-                reader.onload = event => {
-                    try {
-                        const imported = JSON.parse(event.target.result);
-                        // Validate the imported data structure
-                        if (typeof imported !== 'object') {
-                            throw new Error('Invalid registry format');
-                        }
-                        
-                        // Confirm before overwriting
-                        if (confirm('This will replace your current function registry. Continue?')) {
-                            functionsRegistry = imported;
-                            renderFunctionList();
-                            
-                            // Show empty state
-                            emptyStateEl.style.display = 'block';
-                            functionEditorEl.style.display = 'none';
-                            currentFunction = null;
-                            
-                            alert('Registry imported successfully!');
-                        }
-                    } catch (err) {
-                        alert('Error importing registry: ' + err.message);
-                    }
-                };
-                reader.readAsText(file);
-            };
-            
-            input.click();
-        }
-
+                // Clean up potential JSON format issues
+                // Trim whitespace at the beginning and end
+                text = text.trim();
+                
+                // If it ends with a comma and then a closing brace, remove the comma
+                text = text.replace(/,\s*}$/, '}');
+                
+                // If it ends with a comma, add a closing brace
+                text = text.replace(/,\s*$/, '');
+                
+                // If it doesn't begin with { wrap it in {}
+                if (!text.startsWith('{')) {
+                    text = '{' + text;
+                }
+                
+                // If it doesn't end with } wrap it in {}
+                if (!text.endsWith('}')) {
+                    text = text + '}';
+                }
+                
+                const imported = JSON.parse(text);
+                
+                // Validate the imported data structure
+                if (typeof imported !== 'object') {
+                    throw new Error('Invalid registry format');
+                }
+                
+                // Confirm before overwriting
+                if (confirm('This will replace your current function registry. Continue?')) {
+                    functionsRegistry = imported;
+                    renderFunctionList();
+                    
+                    // Show empty state
+                    emptyStateEl.style.display = 'block';
+                    functionEditorEl.style.display = 'none';
+                    currentFunction = null;
+                    
+                    alert('Registry imported successfully!');
+                }
+            } catch (err) {
+                alert('Error importing registry: ' + err.message + '\n\nTry fixing the JSON format manually.');
+                console.error('Import error:', err);
+                console.log('Text that failed to parse:', event.target.result);
+            }
+        };
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
         // Add type-specific prompt
         function addTypeSpecificPrompt(type) {
             if (!type) return;
@@ -1094,56 +1133,58 @@
             renderTypeSpecificPrompts(type);
             updateJsonPreview();
         }
-
-        // Render type-specific prompts
-        function renderTypeSpecificPrompts(type) {
-            typeSpecificContainerEl.innerHTML = '';
-            
-            if (!currentFunction.typeSpecificPrompts || 
-                !currentFunction.typeSpecificPrompts[type] ||
-                !currentFunction.typeSpecificPrompts[type].additional) {
-                typeSpecificContainerEl.innerHTML = '<p>No type-specific prompts for this type yet.</p>';
-                return;
-            }
-            
-            const prompts = currentFunction.typeSpecificPrompts[type].additional;
-            
-            prompts.forEach((prompt, index) => {
-                const template = document.getElementById('type-prompt-template');
-                const promptEl = template.content.cloneNode(true);
-                const container = typeSpecificContainerEl.appendChild(promptEl).querySelector('.prompt-chain-item');
-                
-                // Populate values
-                container.querySelector('.type-prompt-id').value = prompt.id || '';
-                container.querySelector('.type-prompt-id').dataset.index = index;
-                
-                container.querySelector('.type-prompt-label').value = prompt.label || '';
-                container.querySelector('.type-prompt-label').dataset.index = index;
-                
-                container.querySelector('.type-prompt-system').value = prompt.system || '';
-                container.querySelector('.type-prompt-system').dataset.index = index;
-                
-                container.querySelector('.type-prompt-user').value = prompt.user || '';
-                container.querySelector('.type-prompt-user').dataset.index = index;
-                
-                container.querySelector('.type-prompt-format').value = prompt.format || '';
-                container.querySelector('.type-prompt-format').dataset.index = index;
-                
-                // Add event listeners
-                container.querySelector('.remove-btn').addEventListener('click', () => {
-                    currentFunction.typeSpecificPrompts[type].additional.splice(index, 1);
-                    renderTypeSpecificPrompts(type);
-                    updateJsonPreview();
-                });
-                
-                // Input change events
-                container.querySelectorAll('input, textarea').forEach(input => {
-                    input.addEventListener('input', () => {
-                        updateTypeSpecificPrompt(type, index, input);
-                    });
-                });
+function renderTypeSpecificPrompts(type) {
+    typeSpecificContainerEl.innerHTML = '';
+    
+    if (!currentFunction.typeSpecificPrompts || 
+        !currentFunction.typeSpecificPrompts[type]) {
+        typeSpecificContainerEl.innerHTML = '<p>No type-specific prompts for this type yet.</p>';
+        return;
+    }
+    
+    const typePrompts = currentFunction.typeSpecificPrompts[type].additional || [];
+    
+    if (typePrompts.length === 0) {
+        typeSpecificContainerEl.innerHTML = '<p>No type-specific prompts for this type yet.</p>';
+        return;
+    }
+    
+    typePrompts.forEach((prompt, index) => {
+        const template = document.getElementById('type-prompt-template');
+        const promptEl = template.content.cloneNode(true);
+        const container = typeSpecificContainerEl.appendChild(promptEl).querySelector('.prompt-chain-item');
+        
+        // Populate values
+        container.querySelector('.type-prompt-id').value = prompt.id || '';
+        container.querySelector('.type-prompt-id').dataset.index = index;
+        
+        container.querySelector('.type-prompt-label').value = prompt.label || '';
+        container.querySelector('.type-prompt-label').dataset.index = index;
+        
+        container.querySelector('.type-prompt-system').value = prompt.system || '';
+        container.querySelector('.type-prompt-system').dataset.index = index;
+        
+        container.querySelector('.type-prompt-user').value = prompt.user || '';
+        container.querySelector('.type-prompt-user').dataset.index = index;
+        
+        container.querySelector('.type-prompt-format').value = prompt.format || '';
+        container.querySelector('.type-prompt-format').dataset.index = index;
+        
+        // Add event listeners
+        container.querySelector('.remove-btn').addEventListener('click', () => {
+            currentFunction.typeSpecificPrompts[type].additional.splice(index, 1);
+            renderTypeSpecificPrompts(type);
+            updateJsonPreview();
+        });
+        
+        // Input change events
+        container.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', () => {
+                updateTypeSpecificPrompt(type, index, input);
             });
-        }
+        });
+    });
+}
 
         // Update type-specific prompt
         function updateTypeSpecificPrompt(type, index, input) {
