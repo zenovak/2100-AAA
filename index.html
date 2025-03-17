@@ -28,7 +28,15 @@
             color: var(--dark);
             padding: 2rem;
         }
-        
+
+        .field-container {
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        background-color: #fafafa;
+    }
+    
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -1721,20 +1729,6 @@ enhanceUX();
 // Initialize the app
 init();
 
-// Add this CSS style to your <style> tag
-document.addEventListener('DOMContentLoaded', function() {
-    const style = document.createElement('style');
-    style.textContent = `
-    .field-container {
-        border: 1px solid #f0f0f0;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-        background-color: #fafafa;
-    }
-    `;
-    document.head.appendChild(style);
-});
 
       </script>
 
