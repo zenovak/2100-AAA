@@ -1149,8 +1149,7 @@ function exportRegistry() {
     
     URL.revokeObjectURL(url);
 }
-
-// Import function registry
+// Enhanced import function that can handle malformed JSON better
 function importRegistry() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -1165,22 +1164,13 @@ function importRegistry() {
             try {
                 let text = event.target.result;
                 
-                // Clean up potential JSON format issues
-                text = text.trim();
+                // Display raw JSON in console for debugging
+                console.log("Original imported text:", text);
                 
-                // Remove trailing commas
-                text = text.replace(/,\s*}/g, '}');
-                text = text.replace(/,\s*\]/g, ']');
-                text = text.replace(/,\s*$/m, '');
+                // Try to repair common JSON issues
+                text = repairJsonFormat(text);
                 
-                // Wrap in object if needed
-                if (!text.startsWith('{')) {
-                    text = '{' + text;
-                }
-                if (!text.endsWith('}')) {
-                    text = text + '}';
-                }
-                
+                // Try to parse
                 const imported = JSON.parse(text);
                 
                 // Validate the imported data structure
@@ -1204,12 +1194,145 @@ function importRegistry() {
                 alert('Error importing registry: ' + err.message + '\n\nCheck the console for details.');
                 console.error('Import error:', err);
                 console.log('Text that failed to parse:', event.target.result);
+                
+                const response = confirm('Would you like to try alternative import methods?');
+                if (response) {
+                    tryAlternativeImport(event.target.result);
+                }
             }
         };
         reader.readAsText(file);
     };
     
     input.click();
+}
+
+// Function to repair common JSON format issues
+function repairJsonFormat(text) {
+    // Remove BOM if present
+    text = text.replace(/^\uFEFF/, '');
+    
+    // Trim whitespace at the beginning and end
+    text = text.trim();
+    
+    // Check if it starts with a property name (not { or [)
+    // This would be a partial JSON fragment
+    if (!/^[\{\[]/.test(text)) {
+        text = '{' + text;
+    }
+    
+    // Check if it ends properly
+    if (!/[\}\]]$/.test(text)) {
+        text = text + '}';
+    }
+    
+    // Fix trailing commas - before closing brackets
+    text = text.replace(/,(\s*[\}\]])/g, '$1');
+    
+    // Fix missing quotes around property names
+    // This is more complex and might not catch all cases
+    text = text.replace(/([{,]\s*)([a-zA-Z0-9_$]+)(\s*:)/g, '$1"$2"$3');
+    
+    console.log("Repaired JSON:", text);
+    
+    return text;
+}
+
+// Function to try alternative import methods
+function tryAlternativeImport(originalText) {
+    try {
+        // Method 1: Try to parse as JavaScript object literal
+        // This can be dangerous with eval, but we'll restrict it
+        const safeOriginalText = originalText.replace(/[^a-zA-Z0-9_{}[\],:"'\s.-]/g, ''); // Basic sanitization
+        
+        let result;
+        try {
+            // Create a function to evaluate the text safely as an object literal
+            const objFunc = new Function('return ' + safeOriginalText);
+            result = objFunc();
+        } catch (evalError) {
+            console.error("Eval method failed:", evalError);
+            
+            // Method 2: Try to use a more aggressive repair approach
+            // Split by main object definitions and try to parse each one
+            const objects = parseObjectsManually(originalText);
+            
+            if (Object.keys(objects).length > 0) {
+                result = objects;
+            } else {
+                throw new Error("Could not parse as object");
+            }
+        }
+        
+        if (typeof result === 'object' && result !== null) {
+            if (confirm('Alternative import method found valid data. Import?')) {
+                functionsRegistry = result;
+                renderFunctionList();
+                
+                // Show empty state
+                emptyStateEl.style.display = 'block';
+                functionEditorEl.style.display = 'none';
+                currentFunction = null;
+                
+                alert('Registry imported successfully using alternative method!');
+            }
+        } else {
+            alert('Alternative import failed - invalid data format');
+        }
+    } catch (e) {
+        alert('All import methods failed. Please check your JSON format.');
+        console.error("All import methods failed:", e);
+    }
+}
+
+// Parse objects manually from text
+function parseObjectsManually(text) {
+    const result = {};
+    
+    // Look for patterns like "name": { ... },
+    const objectRegex = /"([^"]+)":\s*\{([^}]+)\}/g;
+    
+    let match;
+    while ((match = objectRegex.exec(text)) !== null) {
+        try {
+            const name = match[1];
+            let objectText = '{' + match[2] + '}';
+            
+            // Try to fix common syntax issues
+            objectText = repairJsonFormat(objectText);
+            
+            // Try to parse this individual object
+            const parsedObj = JSON.parse(objectText);
+            
+            if (typeof parsedObj === 'object') {
+                result[name] = parsedObj;
+            }
+        } catch (e) {
+            console.log("Failed to parse an individual object:", match[0]);
+        }
+    }
+    
+    return result;
+}
+
+// Add a simpler direct registry loading function
+function loadRegistryFromJson(jsonText) {
+    try {
+        // Try to parse and set directly
+        const obj = JSON.parse(jsonText);
+        functionsRegistry = obj;
+        renderFunctionList();
+        
+        // Show empty state
+        emptyStateEl.style.display = 'block';
+        functionEditorEl.style.display = 'none';
+        currentFunction = null;
+        
+        alert('Registry loaded successfully!');
+    } catch (e) {
+        alert('Error loading registry: ' + e.message);
+        console.error('Load error:', e);
+    }
 }
 
 // Add type-specific prompt
