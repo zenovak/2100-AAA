@@ -46,8 +46,7 @@ model ChainNode extends Node {
     userPrompt
 
     field       Dictionary<String, String>
-
-    output       Key
+    output      Dictionary<String, String>
 }
 ```
 
@@ -63,7 +62,7 @@ Represents the user prompt. This string accepts a special templating synthax usi
 Corresponds to the templating string provided by `systemPrompt` and `userPrompt`. 
 
 
-`output` (string of key)\
+`output` (Dictionary of key string, value string)\
 mapping that points to the next Node's field property.
 
 <br>
@@ -72,13 +71,23 @@ mapping that points to the next Node's field property.
 Represents an input output filter node within the chain
 
 ```
-model Parser Node {
-   field 
+model ParserNode {
+    rawData       String
+    parser        enum
+
+    schema        String
+    
+    field       Dictionary<String, String>
+    output      Dictionary<String, String>
 }
 ```
 
-`input` reference to a string field of a previous node. 
-`output` 
+`field` (Dictionary of key string, value string)\
+Corresponds to the templating string provided by `rawData`. 
+
+
+`output` (Dictionary of key string, value string)\
+mapping that points to the next Node's field property.
 
 <br>
 
@@ -87,17 +96,36 @@ Events are API calls that will occur at stage of the agent's execution
 
 ```
 model EventNode extends Node {
-    endPoint
-    method
-    params
-    data
+    endPoint    String
+    method      String
+    data        String
+
+    field       Dictionary<String, String>
+    output      Dictionary<String, String>
 }
 ```
 
+`endPoint` (String)\
+The API endpoint to call. Uses the special templating syntax string.
 
+`method` (string | enum)\
+The API request method. `GET`, `POST`, `PUT`, `DELETE`, etc
+
+`data` (string)\
+The JSON template for making the request. Uses the special templating syntax string. During runtime, this string will be parsed back to JSON
+
+`field` (Dictionary of key string, value string)\
+Corresponds to the templating string provided by `endPoint` and `data`. 
+
+
+`output` (Dictionary of key string, value string)\
+mapping that points to the next Node's field property.
+
+<br><br>
 
 ## Business Logic
 
+<br>
 
 ### Making an Agent
 
@@ -175,11 +203,11 @@ Node 4 ParserNode
 rawData: "{rawData}"
 parser: "JSON",
 
-schema: ""
+schema: "
 {
     "character": "Array<String>"
 }
-""
+"
 
 field: {
     rawData: "{rawData}",
