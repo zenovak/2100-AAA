@@ -1,0 +1,232 @@
+
+
+
+
+## System Architecture
+
+
+
+### Microservice: Agent Architecture
+
+The Agent microservice handles the execution of the agent's workflow code, this is done via worker threads.
+
+
+
+
+
+More details in Data Models of agent
+
+
+
+
+## Data Models
+
+
+### Agent
+An Agent represents a single prompt chain with an option to trigger system events. Agents do not hold memory of previous interactions, intead is functionally equivalent to a workflow. It is a single pass operation. 
+
+```
+model Agent {
+    id            String
+    name          String
+    description   String
+
+    promptChain   Node[]
+}
+```
+
+<br>
+
+### Chain Node
+Represents a single step within the prompt chain
+
+```
+model ChainNode extends Node {
+    systemPrompt
+    userPrompt
+
+    field       Dictionary<String, String>
+
+    output       Key
+}
+```
+
+`systemPrompt` (string)\
+Represents the system prompt. This string accepts a special templating synthax using `${field}`
+
+
+`userPrompt` (string)\
+Represents the user prompt. This string accepts a special templating synthax using `${field}`
+
+
+`field` (Dictionary of key string, value string)\
+Corresponds to the templating string provided by `systemPrompt` and `userPrompt`. 
+
+
+`output` (string of key)\
+mapping that points to the next Node's field property.
+
+<br>
+
+### Parser Node
+Represents an input output filter node within the chain
+
+```
+model Parser Node {
+   field 
+}
+```
+
+`input` reference to a string field of a previous node. 
+`output` 
+
+<br>
+
+### System Events
+Events are API calls that will occur at stage of the agent's execution
+
+```
+model EventNode extends Node {
+    endPoint
+    method
+    params
+    data
+}
+```
+
+
+
+## Business Logic
+
+
+### Making an Agent
+
+As an example, an agent that summerizes the plot of the movie and list the characters. Can be constructed via the following nodes. Nodes are listed as pseudo code.
+
+```
+Node 1 PromptNode
+
+systemPrompt: "You are a helpful assistant for creating a list of plots form a movie script denoted by ### \nPlease list the plots by enclosing them with the <plot></plot> syntax"
+userPrompt: "### ${script} ###"
+
+field: {
+    script: "{entryPoint}"
+}
+
+output: {
+    plots: "{output}",
+    script: "{script}"
+}
+```
+
+Each node denotes the output dictionary, and its current input with the above formatting
+
+
+```
+Node 2: PromptNode
+
+systemPrompt: "You are a helpful assistant for creating a brief summary of a movie plot denoted by <plot></plot>"
+userPrompt: "Movie script ${script} \n\nPlot ${summary}"
+
+field: {
+    script: "{script}",     // `{script}` came from prev node output
+    summary: "{plots}"      // `{plot}` came from prev node output
+}
+
+output {
+    summary: "{output}"      // `{output}` is a preserved keyword, of this node's output
+}
+```
+
+Here, we generate the list of characters, but, we are also passing along the generated summary from the previous stage
+
+```
+Node 3 PromptNode
+
+systemPrompt: """
+You are a helpful assistant for listing all the characters of this movie script denoted by ### 
+
+Please respond in JSON with the following schema:
+{
+    "characters: ["Alex", "Steve"]
+}
+"""
+userPrompt: "Movie script ${script}"
+
+field: {
+    summary: "{summary}",
+    script: "{script}",
+}
+
+output: {
+    rawData: "{output}",
+    summary: "{summary}"
+}
+```
+
+Here we parse the LLM output into a json format and verify it with the schema property of this node, which is also just a string object.
+
+The JSON is then stringify again and pass as a string within one of the output's field
+
+We pass the generated summary information to the next node. 
+
+```
+Node 4 ParserNode
+rawData: "{rawData}"
+parser: "JSON",
+
+schema: ""
+{
+    "character": "Array<String>"
+}
+""
+
+field: {
+    rawData: "{rawData}",
+    summary: "{summary}"
+}
+
+output: {
+    lisOfCharacters: "{output}",
+    summary: "{summmary}",
+}
+```
+
+
+In the last node, we fire an event, which in this case is a single API endpoint. Here, the data property of this node is also just actually a string with our templating syntax, which will be parsed, and templated at runtime into a JSON object. 
+
+```
+Node 5 EventNode
+
+endPoint : "/prediction/movie-script/result"
+method: "POST"
+param: null
+data: {
+    "characters": {characters},
+    "summary": {summary},
+}
+
+field: {
+    characters: "{listOfCharacters}" ,  // came from prev node
+    summary: "{summary}"
+}
+```
+
+
+
+### Agent and workflow
+
+
+
+
+<br><br>
+
+
+# API
+
+
+## `/api/agent`
+
+
+
+
