@@ -12,6 +12,6 @@ class PromptNode(BaseModel):
     apiKey: str
     temperature: int
     model: str
-    maxTokens: str
+    maxTokens: int
 
     output: str
