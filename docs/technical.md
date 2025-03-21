@@ -115,9 +115,10 @@ The API key for this agent. This string accepts a special templating syntax usin
 `llm` (String, enum)\
 Registered enum types of available LLM service provider Valid values are:
 - `claude`
+- `replicate`
 
 `model` (String)\
-The model available from the service provider
+The model available from the service provider. See Glossary of supported services for available models
 
 `temperature` (Integer)\
 The Model's temeperature settings
