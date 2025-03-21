@@ -1,11 +1,13 @@
 from models.prompt_node import PromptNode
 from models.return_node import ReturnNode
 from services.claude_ai import claude_llm_completion
+from services.replicate_llm import replicate_llm_completion
 from utils.template_parser import parser
 
 
 SERVICE_REGISTRY = {
-    "claude": claude_llm_completion
+    "claude": claude_llm_completion,
+    "replicate": replicate_llm_completion
 }
 
 
