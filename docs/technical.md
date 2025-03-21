@@ -31,9 +31,14 @@ model Agent {
     name          String
     description   String
 
+    variables     Dictionary<String, String | Dict>
     promptChain   Node[]
 }
 ```
+
+`variables` (Dictionary of key string, value String | JSON Dict)
+Corresponds to the templating string provided by `systemPrompt` and `userPrompt`. Values stored here is referable to the promptChain, throughout the workflow runtime.
+
 
 <br>
 
@@ -42,11 +47,14 @@ Represents a single step within the prompt chain
 
 ```
 model ChainNode extends Node {
-    systemPrompt
-    userPrompt
 
-    field       Dictionary<String, String>
-    output      Dictionary<String, String>
+    systemPrompt     String
+    userPrompt       String
+
+    apikey           String
+    llmProvider      enum
+
+    output           String
 }
 ```
 
@@ -58,16 +66,17 @@ Represents the system prompt. This string accepts a special templating synthax u
 Represents the user prompt. This string accepts a special templating synthax using `${field}`
 
 
-`field` (Dictionary of key string, value string)\
+`field` (string)\
 Corresponds to the templating string provided by `systemPrompt` and `userPrompt`. 
 
 
-`output` (Dictionary of key string, value string)\
-mapping that points to the next Node's field property.
+`output` (string, key)\
+mapping that points to the agent's variables registry key where the model output is stored. If an unregistered key is
+referenced, a new one will be created at workflow runtime.
 
 <br>
 
-### Parser Node
+### Parser Node `@experimental`
 Represents an input output filter node within the chain
 
 ```
