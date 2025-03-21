@@ -31,48 +31,120 @@ model Agent {
     name          String
     description   String
 
-    variables     Dictionary<String, String | Dict>
+    variables     Dictionary<String, String>
     promptChain   Node[]
 }
 ```
 
-`variables` (Dictionary of key string, value String | JSON Dict)
-Corresponds to the templating string provided by `systemPrompt` and `userPrompt`. Values stored here is referable to the promptChain, throughout the workflow runtime.
+`id` (String)\
+uuid4 id string that identifies this agent.
 
+`nade` (String)\
+name of the agent
+
+`description` (String)\
+descriptions for the agent
+
+`variables` (Dictionary of String key, String value)\
+Corresponds to the templating string provided by `system` and `user`. Values stored here is referable to the promptChain, throughout the workflow runtime.
+
+`promptChain` (Array of Node)\
+corresponds to the chain of nodes that uses the node interface. 
 
 <br>
 
-### Chain Node
+### Node (Base class)
+Node represents the base class of all nodes, it is meant as an interface defining the shared parameters of all nodes
+
+```
+model Node {
+    type     enum
+    name     String
+
+    output   String
+}
+```
+
+`type` (String, enum)\
+Represents the type of node. This is used for determined casting in downstream nodes
+
+`name` (String)\
+the name of this node. Used for logging purposes
+
+`output` (string, key)\
+mapping that points to the agent's variables registry key where the model output is stored. If an unregistered key is
+referenced, a new one will be created at workflow runtime.
+
+<br>
+
+### Prompt Node
 Represents a single step within the prompt chain
 
 ```
-model ChainNode extends Node {
+model PromptNode extends Node {
+    type             enum
 
-    systemPrompt     String
-    userPrompt       String
+    system           String
+    user             String
 
     apikey           String
-    llmProvider      enum
+    llm              enum
+    model            String
+    temperature      int
+    maxTokens        int
 
     output           String
 }
 ```
 
-`systemPrompt` (string)\
-Represents the system prompt. This string accepts a special templating synthax using `${field}`
+`type` (String, enum)\
+Represents the type of node. This is used for determined casting in downstream nodes
 
+`name` (String)\
+the name of this node. Used for logging purposes
 
-`userPrompt` (string)\
-Represents the user prompt. This string accepts a special templating synthax using `${field}`
+`system` (string)\
+Represents the system prompt. This string accepts a special templating synthax using `{field}`
 
+`user` (string)\
+Represents the user prompt. This string accepts a special templating synthax using `{field}`
 
-`field` (string)\
-Corresponds to the templating string provided by `systemPrompt` and `userPrompt`. 
+`apiKey` (String)\
+The API key for this agent. This string accepts a special templating syntax using `{field}` which will allow the API key to be parsed at workflow runtime and sent in `agent.variables`
 
+`llm` (String, enum)\
+Registered enum types of available LLM service provider Valid values are:
+- `claude`
+
+`model` (String)\
+The model available from the service provider
+
+`temperature` (Integer)\
+The Model's temeperature settings
+
+`maxToken` (Integer)\
+The model's maximum tokens 
 
 `output` (string, key)\
 mapping that points to the agent's variables registry key where the model output is stored. If an unregistered key is
 referenced, a new one will be created at workflow runtime.
+
+<br>
+
+### Return Node
+Represents the terminal node, which an output can be listed for return
+
+```
+model ReturnNode extends Node {
+
+
+    @Override
+    output          Array<String>
+}
+```
+
+`output` (Array of String key)
+List of keys from the shared context variable to return within the task object once the workflow finishes
 
 <br>
 
@@ -259,11 +331,15 @@ field: {
 <br><br>
 
 
-# API
+# API: Backend Agent Microservice
+The following API backend is a protected internal system. It is not intended to be accessed outside of docker without the proxy pass of the frontend.
 
 
 ## `/api/agent`
 
 
+
+## Webhook to frontend
+For every task completed, a webhook is sent to the frontend to record the workflow's logs, and prediction sessions. 
 
 
