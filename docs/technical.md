@@ -46,7 +46,7 @@ name of the agent
 descriptions for the agent
 
 `variables` (Dictionary of String key, String value)\
-Corresponds to the templating string provided by `system` and `user`. Values stored here is referable to the promptChain, throughout the workflow runtime.
+Corresponds to the templating string provided by runtime nodes like `system` and `user` from `PromptNode`. Values stored here is referable to the promptChain, throughout the workflow runtime.
 
 `promptChain` (Array of Node)\
 corresponds to the chain of nodes that uses the node interface. 
@@ -78,7 +78,7 @@ referenced, a new one will be created at workflow runtime.
 <br>
 
 ### Prompt Node
-Represents a single step within the prompt chain
+Represents a single step within the prompt chain. This node is designed for text llms.
 
 ```
 model PromptNode extends Node {
@@ -104,13 +104,13 @@ Represents the type of node. This is used for determined casting in downstream n
 the name of this node. Used for logging purposes
 
 `system` (string)\
-Represents the system prompt. This string accepts a special templating synthax using `{field}`
+Represents the system prompt. This string accepts a special templating synthx using `{field}`. This is substituded in workflow runtime by referring to values stored in `variables` within `agent`.
 
 `user` (string)\
-Represents the user prompt. This string accepts a special templating synthax using `{field}`
+Represents the user prompt. This string accepts a special templating synthax using `{field}`. This is substituded in workflow runtime by referring to values stored in `variables` within `agent`.
 
 `apiKey` (String)\
-The API key for this agent. This string accepts a special templating syntax using `{field}` which will allow the API key to be parsed at workflow runtime and sent in `agent.variables`
+The API key for this prompt node. This string accepts a special templating syntax using `{field}` which will allow the API key to be parsed at workflow runtime from `agent.variables`
 
 `llm` (String, enum)\
 Registered enum types of available LLM service provider Valid values are:
