@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from typing import Literal
+
+from models.base_node import Node
 
 
-class ReturnNode(BaseModel):
-    type: str
+class ReturnNode(Node):
+    type: Literal["return"] = "return"
 
-    output: list[str]
+    output: str
