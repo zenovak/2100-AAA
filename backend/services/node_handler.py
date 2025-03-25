@@ -11,17 +11,17 @@ SERVICE_REGISTRY = {
 }
 
 
-def handle_prompt_node(node: PromptNode, context: dict):
+async def handle_prompt_node(node: PromptNode, context: dict):
     system = parser(node.system, context)
     user = parser(node.user, context)
-    api = parser(node.api, context)
+    api = parser(node.apikey, context)
     model = parser(node.model, context)
     llm_service = node.llm
 
     llm_completion = SERVICE_REGISTRY.get(llm_service)
 
     try:
-        results = llm_completion(
+        results = await llm_completion(
             api_key=api,
             system=system,
             user=user,
@@ -35,9 +35,6 @@ def handle_prompt_node(node: PromptNode, context: dict):
         print("Unable to handle prompt")
 
 
-def handle_return_node(node: ReturnNode, context: dict):
-    return_obj = {}
-    for key in node.output:
-        return_obj[key] = context[key]
+def handle_return_node(node: ReturnNode, context: dict) -> dict:
 
-    return return_obj
+    return context[node.output]
