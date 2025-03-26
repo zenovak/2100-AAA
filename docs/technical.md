@@ -334,11 +334,123 @@ field: {
 
 # API: Backend Agent Microservice
 The following API backend is a protected internal system. It is not intended to be accessed outside of docker without the proxy pass of the frontend.
+Only accessible from within the docker network.
+
+<br>
+
+## `http://engine:8000/` Docker
+
+### GET
+Basic health check to ensure the engine is running
+
+<br>
+
+## `http://engine:8000/api/task` Docker
+
+### POST
+Creates an agent workflow task
+
+```
+POST /api/task
+
+header {
+
+}
+
+body {
+    "name": "My agent"
+    "variables": {
+        "replicateAPI": "apikey",
+        "genre": "Sciene fiction",
+        "prompt": "Write a nice story",
+        "context": ""
+    }
+    "promptChain": [
+        {
+            "type": "prompt",
+            "name": "Sypnosis",
+
+            "system": "You are a story development expert creating a synopsis for a {genre} film according to the user's request",
+            "user": "{prompt}",
+            "apikey": "{replicateAPI}",
+            "llm": "replicate",
+            "model": "google-deepmind/gemma-3-27b-it",
+            "temperature": 1,
+            "maxTokens": 2000,
+            "output": "context",
+        },
+        {
+            "type": "prompt",
+            "name": "character dev",
+
+            "system": "You are a character development specialist for {genre} films. Given the film's sypnosis enclosed in ### and the user's main request, \n Write the film's character development plans",
+            "user": "### {context} ### {prompt}",
+            "apikey": "{replicateAPI}",
+            "llm": "replicate",
+            "model": "google-deepmind/gemma-3-27b-it",
+            "temperature": 1,
+            "maxTokens": 2000,
+            "output": "context",
+        },
+        {
+            "name": "Return",
+            "type": "return",
+            "output": "context"
+        }
+    ]
+}
+```
+
+`name` (String name)\
+Identifier for the agent task
+
+`promptChain` (Array of Node, required)\
+Represents the main workflow prompt chain node. Where each node is a subclass to the Base Node. Refer to Data Model for description of the Node fields
+
+`variables` (dict of String key, String value)\
 
 
-## `/api/agent`
+Response:
+```
+200 {
+  "id": "fbc5f047-dde3-4ec9-b8bc-e1cd4ec4a6d7",
+  "logs": [
+    "Sypnosis: Running",
+    ...
+  ],
+  "output": ""
+}
+```
+
+`200`\
+Returns the relevant task object which reports the workflow execution's logs and output
+
+<br>
+
+## `http://engine:8000/api/task/{taskId}`
+
+### GET
+Retrives the relevant task object for an agent's execution
+
+```
+GET /api/task/fbc5f047-dde3-4ec9-b8bc-e1cd4ec4a6d7
+```
+
+Response:
+
+```
+200 {
+  "id": "fbc5f047-dde3-4ec9-b8bc-e1cd4ec4a6d7",
+  "logs": [
+    "Sypnosis: Running",
+    ...
+  ],
+  "output": ""
+}
+```
 
 
+<br><br>
 
 ## Webhook to frontend
 For every task completed, a webhook is sent to the frontend to record the workflow's logs, and prediction sessions. 
