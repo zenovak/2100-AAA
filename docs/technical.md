@@ -4,29 +4,26 @@
 
 ## System Architecture
 
+![alt text](attachments/api-flow.png)
 
 
 ### Microservice: Agent Architecture
 
 The Agent microservice handles the execution of the agent's workflow code, this is done via fastapi's background task, and asyncio's awaitables for LLM API requests.
 
-
-
-
-
 More details in Data Models of agent
 
+<br><br>
 
+## Data Models - Backend Engine
 
+The following represent's the Engine's backend Schemas
 
-## Data Models
-
-
-### Agent
+### Agent (Engine's schema)
 An Agent represents a single prompt chain with an option to trigger system events. Agents do not hold memory of previous interactions, intead is functionally equivalent to a workflow. It is a single pass operation. 
 
 ```
-model Agent {
+class Agent {
     id            String
     name          String
     description   String
@@ -39,7 +36,7 @@ model Agent {
 `id` (String)\
 uuid4 id string that identifies this agent.
 
-`nade` (String)\
+`name` (String)\
 name of the agent
 
 `description` (String)\
@@ -57,7 +54,7 @@ corresponds to the chain of nodes that uses the node interface.
 Node represents the base class of all nodes, it is meant as an interface defining the shared parameters of all nodes
 
 ```
-model Node {
+class Node {
     type     enum
     name     String
 
@@ -81,7 +78,7 @@ referenced, a new one will be created at workflow runtime.
 Represents a single step within the prompt chain. This node is designed for text llms.
 
 ```
-model PromptNode extends Node {
+class PromptNode extends Node {
     type             enum
 
     system           String
@@ -136,8 +133,7 @@ referenced, a new one will be created at workflow runtime.
 Represents the terminal node, which an output can be listed for return
 
 ```
-model ReturnNode extends Node {
-
+class ReturnNode extends Node {
 
     @Override
     output          Array<String>
@@ -177,7 +173,7 @@ mapping that points to the next Node's field property.
 Events are API calls that will occur at stage of the agent's execution
 
 ```
-model EventNode extends Node {
+class EventNode extends Node {
     endPoint    String
     method      String
     data        String
@@ -199,15 +195,87 @@ The JSON template for making the request. Uses the special templating syntax str
 `field` (Dictionary of key string, value string)\
 Corresponds to the templating string provided by `endPoint` and `data`. 
 
-
 `output` (Dictionary of key string, value string)\
 mapping that points to the next Node's field property.
+
+<br>
+
+### Task 
+The Task object of the running agent
+
+```
+class Task {
+    id       String
+    logs     Array<String>
+    output   Dict<String, Object>
+}
+```
+
+<br><br>
+
+## Data Models - Frontend 2100aaa public
+The following represents the schema and data models for the frontend stack
+
+```
+
+```
+
+
 
 <br><br>
 
 ## Business Logic
 
 <br>
+
+### Database Serializations
+Due to the dynamic nature of the agent, nodes, and task objects. Agents, nodes, and tasks are serialized differently when stored in the database. The following represents an executive summary of the database model, and its corresponding JSONified objects
+
+```
+model Agent {
+  id              String      @id @default(cuid())
+  name            String      @unique
+  description     String?
+
+  // core fields used by backend
+  variables       String                               // JSON String of the variables used by workflow
+  workflow        String                               // JSON string
+
+  // Additional fields used by frontend
+
+  task            Task[]
+}
+```
+
+`workflow` (String, stringified JSON)\
+Maps to the `promptChain` field of the equivalent workflow object expected within the backend engine.
+
+`variables` (String, stringified JSON)\
+Maps to the `variables` field of the equivalent workflow object expected within the backend engine.
+
+<br>
+
+```
+model Task {
+  id             String       @id @default(cuid())
+  name           String       
+  agentId        String
+
+  logs           String                               // JSON string
+  output         String                               // JSON string
+
+  agent          Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+```
+
+`logs` (String, stringified JSON of `Array<String>`)\
+Maps to the `logs` field of the equivalent Task object sent from the backend engine.
+
+`output` (String, stringified JSON of `Dict<String, Object>`)\
+Maps to the `output` field of the equivalent Task object sent from the backend engine. This is JSONified as a dictionary of key value pairs
+
+
+<br><br>
 
 ### Making an Agent
 
@@ -354,7 +422,7 @@ Creates an agent workflow task
 POST /api/task
 
 header {
-
+    "Content-Type": "application/json"
 }
 
 body {
@@ -454,6 +522,33 @@ Response:
 ## Webhook to frontend
 For every task completed, a webhook is sent to the frontend to record the workflow's logs, and prediction sessions. 
 
+> ![note]
+> The request body is a task object. Refer to Data Model section for more detail
+
+The following represents the webhook's request body:
+
+```
+POST http://2100aaa:3000/api/v1/callback/task?tastkId=""
+
+header {
+    "Content-Type": "application/json"
+}
+
+body {
+    "id": "fbc5f047-dde3-4ec9-b8bc-e1cd4ec4a6d7",
+    "logs": [
+        "Sypnosis: Running",
+        ...
+    ],
+    "output": ""
+}
+```
+
+`taskId` (params)\
+The URL params passed as part of the task being run
+
+
+
 <br><br>
 
 
@@ -497,7 +592,7 @@ Run the given agent, based on the a list of required inputs for the agent for ex
 
 <br>
 
-## `/api/v1/tasks/{taskId}` API Key required
+## `/api/v1/task/{taskId}` API Key required
 
 ### GET
 Retrieves the relevant user's workflow outputs, and progress report.
