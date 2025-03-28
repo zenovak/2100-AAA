@@ -590,6 +590,51 @@ Retrives the relevant agent's schemas
 ### POST
 Run the given agent, based on the a list of required inputs for the agent for execution.
 
+```
+POST /api/v1/workflow/movie-script
+
+header {
+    "Content-Type": "application/json",
+    "apikey": "apikey123"
+}
+
+body {
+    "input": {
+        "apikey": "apikey",
+        "user": "user prompt",
+        "system": "system prompt"
+    }
+}
+```
+
+`agentId` (String, required | Url params)\
+The agent's ID. This is required. You can find a list of all our agents in the documentations
+
+`apikey` (String, required | Header)\
+The API key for running this operation.
+
+`input` (Dict, key-value, required)\
+The required inputs for running this agent. The exact keys and values for this input field is unique and differs depending on the agents. You can look up
+the required inputs in the agent's description page
+
+<br>
+
+Response
+
+```
+201 {
+    "id": "fbc5f047-dde3-4ec9-b8bc-e1cd4ec4a6d7",
+    "logs": [
+        "Sypnosis: Running",
+        ...
+    ],
+    "output": ""
+}
+```
+
+`201`\
+Returns the task object for this agent's execution
+
 <br>
 
 ## `/api/v1/task/{taskId}` API Key required
