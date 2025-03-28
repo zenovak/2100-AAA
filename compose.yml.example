@@ -1,0 +1,44 @@
+services:
+
+  # nextjs frontend
+  2100aaa:
+    container_name: 2100aaa
+    image: 2100aaa:1.0.0
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 127.0.0.1:3000:3000
+    environment:
+      - NEXT_PUBLIC_SITE_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=supersecretkeys
+      - NEXTAUTH_URL=http://localhost:3000
+
+      - POSTGRES_PRISMA_URL=
+      - POSTGRES_URL_NON_POOLING=
+
+      - WORKFLOW_ENGINE_URL=http://engine:8000
+    depends_on:
+      - engine
+
+    networks:
+      - internal
+
+  # python fastapi backend
+  engine:
+    container_name: engine
+    image: engine:1.0.0
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 127.0.0.1:8000:8000
+    environment:
+      - FRONT_CALLBACK_URL=http://2100aaa:3000/api/v1/callback/task
+
+    networks:
+      - internal
+
+networks:
+  internal:
+
