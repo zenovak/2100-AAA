@@ -642,3 +642,33 @@ Returns the task object for this agent's execution
 ### GET
 Retrieves the relevant user's workflow outputs, and progress report.
 
+```
+GET /api/v1/task/taskid123
+
+header {
+    "apikey": "apikey123"
+}
+```
+
+`taskId` (String, required | Url params)\
+The task's id. 
+
+`apikey` (String, required | Header)\
+The API key for running this operation.
+
+
+Response
+
+```
+201 {
+    "id": "fbc5f047-dde3-4ec9-b8bc-e1cd4ec4a6d7",
+    "logs": [
+        "Sypnosis: Running",
+        ...
+    ],
+    "output": ""
+}
+```
+
+`201`\
+Returns the task object
