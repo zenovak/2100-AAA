@@ -33,6 +33,9 @@ export default async function handler(req, res) {
                     id: id
                 }
             });
+
+            dbTask.logs = JSON.parse(dbTask.logs);
+            dbTask.output = JSON.parse(dbTask.output);
             res.status(200).json(dbTask);
             return;
         } catch (error) {
