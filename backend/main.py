@@ -32,11 +32,12 @@ async def fire_webhook(task: Task):
             response = await client.post(
                 FRONT_CALLBACK_URL, 
                 headers={
-
+                    "Content-Type": "application/json"
                 },
-                json={
-
-                }
+                params={
+                    "taskId": task.id
+                },
+                json=task.model_dump_json()
             )
             response.raise_for_status()
     except httpx.HTTPStatusError as e:
