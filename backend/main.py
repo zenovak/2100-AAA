@@ -1,3 +1,5 @@
+import asyncio
+import os
 import uuid
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException
@@ -7,11 +9,40 @@ from models.agent import Agent
 from models.task import Task
 from services.node_handler import handle_prompt_node, handle_return_node
 
+from dotenv import load_dotenv
+
+
+load_dotenv()
 app = FastAPI(debug=True)
 
-tasks = {
+tasks = {}
 
-}
+FRONT_CALLBACK_URL = os.getenv("FRONT_CALLBACK_URL")
+
+
+async def fire_webhook(task: Task):
+    """
+    Fires the webhook for alerting the frontend for updates
+    :param task:
+    :return:
+    """
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                FRONT_CALLBACK_URL, 
+                headers={
+
+                },
+                json={
+
+                }
+            )
+            response.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
 
 
 async def run_workflow(agent: Agent, task: Task):
@@ -28,6 +59,9 @@ async def run_workflow(agent: Agent, task: Task):
             data = handle_return_node(node, context)
             task.output = data
             return
+
+        # Fire Notification asynchronously. without await to avoid stalling
+        asyncio.create_task(fire_webhook(task))
 
 
 @app.get('/')
@@ -51,6 +85,11 @@ async def get_results(taskId) -> Task:
 
     return tasks[taskId]
 
+
+print(f"""
+Confirming credentials:
+ - FRONTEND_CALLBACK_URL={FRONT_CALLBACK_URL}
+""")
 
 # Run with
 # uvicorn main:app --reload
