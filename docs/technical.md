@@ -8,7 +8,7 @@
 
 ### Microservice: Agent Architecture
 
-The Agent microservice handles the execution of the agent's workflow code, this is done via worker threads.
+The Agent microservice handles the execution of the agent's workflow code, this is done via fastapi's background task, and asyncio's awaitables for LLM API requests.
 
 
 
@@ -173,7 +173,7 @@ mapping that points to the next Node's field property.
 
 <br>
 
-### System Events
+### System Events @experimental
 Events are API calls that will occur at stage of the agent's execution
 
 ```
@@ -427,7 +427,7 @@ Returns the relevant task object which reports the workflow execution's logs and
 
 <br>
 
-## `http://engine:8000/api/task/{taskId}`
+## `http://engine:8000/api/task/{taskId}` Docker
 
 ### GET
 Retrives the relevant task object for an agent's execution
@@ -449,10 +449,56 @@ Response:
 }
 ```
 
-
 <br><br>
 
 ## Webhook to frontend
 For every task completed, a webhook is sent to the frontend to record the workflow's logs, and prediction sessions. 
 
+<br><br>
+
+
+# API: Frontend NextJS
+The following API endpoints are public APIs meant to serve public users to run an agent.
+
+## `/api/v1/agent` API Key Required
+
+### GET
+Retrieves a list of agents
+
+Querying url parameters are as follows:
+
+
+### POST
+Create a new agent
+
+<br>
+
+## `/api/v1/agent/{agentId}` API Key Required
+
+### GET
+Retrieves the relevant information for the agent
+
+### POST
+Updates the current agent. Updates are rewrites, thus, the frontend needs to send the full revision JSON for the agent
+
+### DELETE
+Deletes an agent from the database
+
+
+<br>
+
+## `/api/v1/workflow/{agentId}` API Key required
+
+### GET
+Retrives the relevant agent's schemas
+
+### POST
+Run the given agent, based on the a list of required inputs for the agent for execution.
+
+<br>
+
+## `/api/v1/tasks/{taskId}` API Key required
+
+### GET
+Retrieves the relevant user's workflow outputs, and progress report.
 
