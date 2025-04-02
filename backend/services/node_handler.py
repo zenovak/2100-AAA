@@ -36,5 +36,8 @@ async def handle_prompt_node(node: PromptNode, context: dict):
 
 
 def handle_return_node(node: ReturnNode, context: dict) -> dict:
-
-    return context[node.output]
+    outputDict = {}
+    for key in node.output:
+        outputDict[key] = context[key]
+        
+    return outputDict

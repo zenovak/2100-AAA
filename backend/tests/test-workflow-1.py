@@ -44,7 +44,7 @@ agent = {
         {
             "name": "Return",
             "type": "return",
-            "output": "context"
+            "output": ["context"]
         }
     ]
 }
