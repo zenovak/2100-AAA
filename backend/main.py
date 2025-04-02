@@ -30,6 +30,7 @@ async def fire_webhook(task: Task):
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
+
                 FRONT_CALLBACK_URL, 
                 headers={
                     "Content-Type": "application/json"
@@ -37,7 +38,7 @@ async def fire_webhook(task: Task):
                 params={
                     "taskId": task.id
                 },
-                json=task.model_dump_json()
+                json=task.model_dump()
             )
             response.raise_for_status()
     except httpx.HTTPStatusError as e:

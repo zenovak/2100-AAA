@@ -29,6 +29,7 @@ async def handle_prompt_node(node: PromptNode, context: dict):
             temperature=node.temperature,
             tokens=node.maxTokens
         )
+        print("LLM: " + results)
         context[node.output] = results
 
     except Exception:

@@ -11,16 +11,6 @@ export default async function handler(req, res) {
 
   const { id, logs, output } = req.body;
 
-  if (!id || !logs || !output) {
-    res.status(400).json({ message: "Invalid! no data received" });
-    return;
-  }
-
-
-  if (!(output instanceof String)) {
-    output = JSON.stringify(output);
-  }
-
   let retries = 5;
   while (retries > 0) {
     try {
@@ -30,7 +20,7 @@ export default async function handler(req, res) {
         },
         data: {
           logs: JSON.stringify(logs),
-          output: output
+          output: JSON.stringify(output)
         }
       });
 
