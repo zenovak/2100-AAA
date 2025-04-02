@@ -4,7 +4,8 @@ import { runAgent } from "@/utils/server/run-workflow";
 
 export default async function handler(req, res) {
   const agentId = req.query.agentId;
-  const input = req.body;
+  const input = req.body.input;
+
 
   const agent = await prisma.agent.findUnique({
     where: {
@@ -17,8 +18,17 @@ export default async function handler(req, res) {
     return;
   }
 
+  // parse and init agent's variables
   agent.variables = JSON.parse(agent.variables);
   agent.workflow = JSON.parse(agent.workflow);
+
+  // replace keys in input body to populate variables
+  for (const key in input) {
+    if (Object.prototype.hasOwnProperty.call(input, key)) {
+      const element = input[key];
+      agent.variables[key] = element;
+    }
+  }
 
   const workflowAgent = {
     id: agent.id,
