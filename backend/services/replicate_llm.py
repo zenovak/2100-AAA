@@ -22,7 +22,7 @@ async def replicate_llm_completion(api_key, model, system, user, tokens, tempera
 
     model_format = get_model_format(model, system, user, tokens, temperature)
 
-    response = client.async_run(
+    response = await client.async_run(
         model_format["model"],
         input=model_format["input"]
     )
