@@ -79,7 +79,6 @@ model Agent {
 
 model Task {
   id             String       @id @default(cuid())
-  name           String       
   agentId        String
 
   logs           String                               // JSON string
