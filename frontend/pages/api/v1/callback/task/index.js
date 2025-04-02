@@ -7,49 +7,43 @@ import prisma from "@/utils/server/prisma";
  * @param {*} res 
  */
 export default async function handler(req, res) {
-    const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-    const { id, logs, output } = req.body;
+  const { id, logs, output } = req.body;
 
-    if (!id || !logs || !output) {
-        console.log(JSON.stringify(req.body));
-        res.status(400).json({ message: "Invalid! no data received"});
-        return;
-    }
-
-
-    if (!output instanceof String) {
-        output = JSON.stringify(output);
-    }
-
-    let retries = 5;
-    while (retries > 0) {
-        try {
-            const dbTask = await prisma.task.upsert({
-                create: {
-                    id: id,
-                    logs: JSON.stringify(logs),
-                    output: output
-                },
-                update: {
-                    logs: JSON.stringify(logs),
-                    output: output
-                },
-                where: {
-                    id: id
-                }
-            });
-
-            dbTask.logs = JSON.parse(dbTask.logs);
-            dbTask.output = JSON.parse(dbTask.output);
-            res.status(200).json(dbTask);
-            return;
-        } catch (error) {
-            await snooze(2000);
-            console.log(error);
-            retries--
-        }
-    }
-    res.status(500).json({message: "Unable to update user data"});
+  if (!id || !logs || !output) {
+    res.status(400).json({ message: "Invalid! no data received" });
     return;
+  }
+
+
+  if (!(output instanceof String)) {
+    output = JSON.stringify(output);
+  }
+
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const dbTask = await prisma.task.update({
+        where: {
+          id: id
+        },
+        data: {
+          logs: JSON.stringify(logs),
+          output: output
+        }
+      });
+
+      dbTask.logs = JSON.parse(dbTask.logs);
+      dbTask.output = JSON.parse(dbTask.output);
+      res.status(200).json(dbTask);
+      return;
+    } catch (error) {
+      await snooze(2000);
+      console.log(error);
+      retries--
+    }
+  }
+  res.status(500).json({ message: "Unable to update user data" });
+  return;
 }

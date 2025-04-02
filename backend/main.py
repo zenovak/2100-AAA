@@ -59,7 +59,7 @@ async def run_workflow(agent: Agent, task: Task):
         if node.type == "return":
             data = handle_return_node(node, context)
             task.output = data
-            return
+            
 
         # Fire Notification asynchronously. without await to avoid stalling
         asyncio.create_task(fire_webhook(task))

@@ -44,6 +44,16 @@ export default async function handler(req, res) {
     return;
   }
 
+  // register the instance of running task to db
+  const task = await prisma.task.create({
+    data: {
+      id: response.id,
+      agentId: agent.id,
+      logs: JSON.stringify(response.logs),
+      output: JSON.stringify(response.output)
+    }
+  })
+
   res.status(201).json(response);
   return;
 }
