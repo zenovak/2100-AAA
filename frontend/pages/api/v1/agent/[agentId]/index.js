@@ -49,7 +49,7 @@ async function get(req, res) {
     return;
   } catch (error) {
     const errorRes = handlePrismaError(error);
-    res.status(errorRes.status).json({ message: errorRes.message});
+    res.status(errorRes.status).json({ message: errorRes.message });
     return;
   }
 }
@@ -62,9 +62,10 @@ async function get(req, res) {
  */
 async function post(req, res) {
   const agentId = req.query.agentId;
+  const { name, description, workflow, variables } = req.body;
 
   if (!name || !description || !workflow) {
-    res.status(400).json({ message: "Missing required body args"});
+    res.status(400).json({ message: "Missing required body args" });
     return;
   }
 
@@ -83,7 +84,7 @@ async function post(req, res) {
     res.status(201).json(agent);
     return;
   } catch (error) {
-    res.status(errorRes.status).json({ message: errorRes.message});
+    res.status(errorRes.status).json({ message: errorRes.message });
     return;
   }
 }
@@ -105,7 +106,7 @@ async function handleDelete(req, res) {
     res.status(201).json(agent);
     return;
   } catch (error) {
-    res.status(errorRes.status).json({ message: errorRes.message});
+    res.status(errorRes.status).json({ message: errorRes.message });
     return;
   }
 }
