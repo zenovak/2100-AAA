@@ -55,7 +55,8 @@ async def run_workflow(agent: Agent, task: Task):
         task.logs.append("Data: " + str(context))
 
         if node.type == "prompt":
-            await handle_prompt_node(node, context)
+            llm_response = await handle_prompt_node(node, context)
+            task.logs.append("Response: " + llm_response)
 
         if node.type == "return":
             data = handle_return_node(node, context)
