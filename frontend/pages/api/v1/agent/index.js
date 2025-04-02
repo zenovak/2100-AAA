@@ -41,6 +41,9 @@ async function post(req, res) {
       }
     });
 
+    // parse back to JSON
+    agent.variables = JSON.parse(agent.variables);
+    agent.workflow = JSON.parse(agent.workflow);
     res.status(201).json(agent);
     return;
   } catch (error) {
