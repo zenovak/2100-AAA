@@ -559,12 +559,146 @@ The following API endpoints are public APIs meant to serve public users to run a
 
 ### GET
 Retrieves a list of agents
+```
+GET /api/v1/agent
+```
 
 Querying url parameters are as follows:
 
+response:
+```
+200 {
+    [
+        {
+           id: "movie-agent",
+            name: "Movie Script agent",
+            description: "An Agent that generates a movie script",
+            variables: {
+                "field1": "Value1",
+                "field2": "value2",
+                ...
+            }
+            workflow: [
+                {
+                    "type": "prompt",
+                    "name": "Sypnosis",
+
+                    "system": "You are a story development expert creating a synopsis for a {genre} film according to the user's request",
+                    "user": "{prompt}",
+                    "apikey": "{replicateAPI}",
+                    "llm": "replicate",
+                    "model": "google-deepmind/gemma-3-27b-it",
+                    "temperature": 1,
+                    "maxTokens": 2000,
+                    "output": "context",
+                },
+                {
+                    "type": "prompt",
+                    "name": "character dev",
+
+                    "system": "You are a character development specialist for {genre} films. Given the film's sypnosis enclosed in ### and the user's main request, \n Write the film's character development plans",
+                    "user": "### {context} ### {prompt}",
+                    "apikey": "{replicateAPI}",
+                    "llm": "replicate",
+                    "model": "google-deepmind/gemma-3-27b-it",
+                    "temperature": 1,
+                    "maxTokens": 2000,
+                    "output": "context",
+                },
+                {
+                    "name": "Return",
+                    "type": "return",
+                    "output": "context"
+                }
+            ] 
+        },
+        ...
+    ]
+}
+```
+
+<br>
 
 ### POST
 Create a new agent
+
+```
+POST /api/v1/agent
+
+header {
+    "Content-Type": "application/json",
+    "apikey": "apikey123"
+}
+
+body {
+    id: "movie-agent",
+    name: "Movie Script agent",
+    description: "An Agent that generates a movie script",
+    variables: {
+        "field1": "Value1",
+        "field2": "value2",
+        ...
+    }
+    workflow: [
+        {
+            "type": "prompt",
+            "name": "Sypnosis",
+
+            "system": "You are a story development expert creating a synopsis for a {genre} film according to the user's request",
+            "user": "{prompt}",
+            "apikey": "{replicateAPI}",
+            "llm": "replicate",
+            "model": "google-deepmind/gemma-3-27b-it",
+            "temperature": 1,
+            "maxTokens": 2000,
+            "output": "context",
+        },
+        {
+            "type": "prompt",
+            "name": "character dev",
+
+            "system": "You are a character development specialist for {genre} films. Given the film's sypnosis enclosed in ### and the user's main request, \n Write the film's character development plans",
+            "user": "### {context} ### {prompt}",
+            "apikey": "{replicateAPI}",
+            "llm": "replicate",
+            "model": "google-deepmind/gemma-3-27b-it",
+            "temperature": 1,
+            "maxTokens": 2000,
+            "output": "context",
+        },
+        {
+            "name": "Return",
+            "type": "return",
+            "output": "context"
+        }
+    ]
+}
+```
+
+`id` (String, required)\
+Unique Identifier for the agent. This is what is used to reference an agent when a workflow is called. 
+
+`name` (String, required)\
+Identifier for the agent. This is the printable name of the agent
+
+`workflow` (Array of Node, required)\
+Represents the main workflow prompt chain node. Where each node is a subclass to the Base Node. Refer to Data Model for description of the Node fields
+
+`variables` (dict of String key, String value | defaults to empty array)\
+Represents the key value pair of variables that will be substituded within the workflow (promptChain in backend).
+
+<br>
+
+Response
+```
+201 {
+
+}
+
+400 {
+
+}
+```
 
 <br>
 
