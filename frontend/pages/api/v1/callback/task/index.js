@@ -11,6 +11,12 @@ export default async function handler(req, res) {
 
     const { id, logs, output } = req.body;
 
+    if (!id || !logs || !output) {
+        console.log(JSON.stringify(req.body));
+        res.status(400).json({ message: "Invalid! no data received"});
+        return;
+    }
+
 
     if (!output instanceof String) {
         output = JSON.stringify(output);
