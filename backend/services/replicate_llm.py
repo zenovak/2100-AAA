@@ -18,7 +18,7 @@ def get_model_format(model, system, user, tokens, temperature):
 
 
 async def replicate_llm_completion(api_key, model, system, user, tokens, temperature):
-    client = replicate.Client(api_key=api_key)
+    client = replicate.Client(api_token=api_key)
 
     model_format = get_model_format(model, system, user, tokens, temperature)
 
