@@ -32,6 +32,7 @@ Table.Headers = ({ className, override, children, ...props }) => {
     </thead>
   );
 }
+Table.Headers.displayName = "Table.Headers";
 
 Table.Header = ({ className, override, children, ...props }) => {
   return (
@@ -45,7 +46,7 @@ Table.Header = ({ className, override, children, ...props }) => {
     </th>
   )
 }
-
+Table.Header.displayName = "Table.Header";
 
 Table.Body = ({ className, override, children, ...props }) => {
   return (
@@ -58,7 +59,7 @@ Table.Body = ({ className, override, children, ...props }) => {
     </tbody>
   )
 }
-
+Table.Body.displayName = "Table.Body";
 
 Table.Row = ({ className, override, children, ...props }) => {
   return (
@@ -70,7 +71,7 @@ Table.Row = ({ className, override, children, ...props }) => {
     </tr>
   )
 }
-
+Table.Row.displayName = "Table.Row";
 
 Table.Cell = ({ className, override, children, ...props }) => {
   return (
@@ -83,3 +84,4 @@ Table.Cell = ({ className, override, children, ...props }) => {
     </td>
   )
 }
+Table.Cell.displayName = "Table.Cell";
