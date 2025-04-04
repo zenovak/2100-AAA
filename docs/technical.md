@@ -208,6 +208,7 @@ class Task {
     id       String
     logs     Array<String>
     output   Dict<String, Object>
+    status   String
 }
 ```
 
@@ -216,11 +217,38 @@ class Task {
 ## Data Models - Frontend 2100aaa public
 The following represents the schema and data models for the frontend stack
 
-```
+<br>
+
+### Task
+Noticibly, the task object for the frontend has more fields.
 
 ```
+class Task {
+  id             String       @id @default(cuid())
+  name           String       
+  agentId        String
 
+  logs           Array<String>                
+  output         Dict<String, String>        
+  status         Status        // enum of running, complete, error
 
+  callback       String?
+
+  agent          Agent        
+}
+```
+
+`logs` (`Array<String>`)\
+Maps to the `logs` field of the equivalent Task object sent from the backend engine.
+
+`output` (JSON of `Dict<String, Object>`)\
+Maps to the `output` field of the equivalent Task object sent from the backend engine. This is JSONified as a dictionary of key value pairs
+
+`status` (String, enum)\
+Represents the current task status. Status is represented as an enum of `running`, `complete`, `error`
+
+`callback` (String URL)\
+The callback URL provided by the user when running a task. This is used to call webhook notifications
 
 <br><br>
 
@@ -255,6 +283,7 @@ Maps to the `variables` field of the equivalent workflow object expected within 
 
 <br>
 
+
 ```
 model Task {
   id             String       @id @default(cuid())
@@ -263,7 +292,9 @@ model Task {
 
   logs           String                               // JSON string
   output         String                               // JSON string
-  status         Status                               // enum of running, complete, error
+  status         Status        // enum of running, complete, error
+
+  callback       String?
 
   agent          Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
 }
@@ -277,6 +308,9 @@ Maps to the `output` field of the equivalent Task object sent from the backend e
 
 `status` (String, enum)\
 Represents the current task status. Status is represented as an enum of `running`, `complete`, `error`
+
+`callback` (String URL)\
+The callback URL provided by the user when running a task. This is used to call webhooks
 
 <br><br>
 
@@ -530,7 +564,7 @@ See task object Model for more details
 For every task completed, a webhook is sent to the frontend to record the workflow's logs, and prediction sessions. 
 
 > ![note]
-> The request body is a task object. Refer to Data Model section for more detail
+> The request body is a task object specific to the Backend Engine. Refer to Data Model section for more detail
 
 The following represents the webhook's request body:
 
@@ -747,7 +781,8 @@ body {
         "replicateKey": "apikey",
         "user": "user prompt",
         "system": "system prompt"
-    }
+    },
+    "callback": "https://myapp.com/api/v1/callback/2100aaa"
 }
 ```
 
@@ -758,8 +793,10 @@ The agent's ID. This is required. You can find a list of all our agents in the d
 The API key for running this operation.
 
 `input` (Dict, key-value, required)\
-The required inputs for running this agent. The exact keys and values for this input field is unique and differs depending on the agents. You can look up
-the required inputs in the agent's description page
+The required inputs for running this agent. The exact keys and values for this input field is unique and differs depending on the agents. You can look up the required inputs in the agent's description page
+
+`callback` (String, optional)\
+The URL for receiving a webhook notification for the task execution
 
 <br>
 
@@ -772,7 +809,9 @@ Response
         "Sypnosis: Running",
         ...
     ],
-    "output": ""
+    "output": "",
+
+    "callback": "https://myapp.com/api/v1/callback/2100aaa"
 }
 ```
 
@@ -800,6 +839,7 @@ The task's id.
 `apikey` (String, required | Header)\
 The API key for running this operation.
 
+<br>
 
 Response
 
@@ -810,7 +850,9 @@ Response
         "Sypnosis: Running",
         ...
     ],
-    "output": ""
+    "output": "",
+
+    "callback": "https://myapp.com/api/v1/callback/2100aaa"
 }
 ```
 
