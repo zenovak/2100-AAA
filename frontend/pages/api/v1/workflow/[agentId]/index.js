@@ -49,6 +49,7 @@ export default async function handler(req, res) {
     data: {
       id: response.id,
       agentId: agent.id,
+      status: response.status,
       logs: JSON.stringify(response.logs),
       output: JSON.stringify(response.output)
     }

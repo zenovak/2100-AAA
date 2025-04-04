@@ -9,7 +9,7 @@ import prisma from "@/utils/server/prisma";
 export default async function handler(req, res) {
   const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-  const { id, logs, output } = req.body;
+  const { id, logs, output, status } = req.body;
 
   let retries = 5;
   while (retries > 0) {
@@ -19,6 +19,7 @@ export default async function handler(req, res) {
           id: id
         },
         data: {
+          status: status,
           logs: JSON.stringify(logs),
           output: JSON.stringify(output)
         }
