@@ -263,6 +263,7 @@ model Task {
 
   logs           String                               // JSON string
   output         String                               // JSON string
+  status         Status                               // enum of running, complete, error
 
   agent          Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
 }
@@ -274,6 +275,8 @@ Maps to the `logs` field of the equivalent Task object sent from the backend eng
 `output` (String, stringified JSON of `Dict<String, Object>`)\
 Maps to the `output` field of the equivalent Task object sent from the backend engine. This is JSONified as a dictionary of key value pairs
 
+`status` (String, enum)\
+Represents the current task status. Status is represented as an enum of `running`, `complete`, `error`
 
 <br><br>
 
@@ -486,6 +489,7 @@ Response:
     "Sypnosis: Running",
     ...
   ],
+  "status": "running",
   "output": ""
 }
 ```
@@ -513,9 +517,12 @@ Response:
     "Sypnosis: Running",
     ...
   ],
+  "status": "running",
   "output": ""
 }
 ```
+
+See task object Model for more details
 
 <br><br>
 
@@ -540,6 +547,7 @@ body {
         "Sypnosis: Running",
         ...
     ],
+    "status": "running",
     "output": ""
 }
 ```
@@ -547,6 +555,8 @@ body {
 `taskId` (params)\
 The URL params passed as part of the task being run
 
+`status` (string body)\
+The status of the task. This is webhooked to the frontend. Enum values are: `running`, `complete`, `error`
 
 
 <br><br>
@@ -734,7 +744,7 @@ header {
 
 body {
     "input": {
-        "apikey": "apikey",
+        "replicateKey": "apikey",
         "user": "user prompt",
         "system": "system prompt"
     }
