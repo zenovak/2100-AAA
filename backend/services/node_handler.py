@@ -35,7 +35,7 @@ async def handle_prompt_node(node: PromptNode, context: dict):
 
     except Exception as e:
         print("LLM completion not working")
-        return e.__str__()
+        return e
 
 
 def handle_return_node(node: ReturnNode, context: dict) -> dict:

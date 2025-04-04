@@ -52,15 +52,23 @@ async def run_workflow(agent: Agent, task: Task):
 
     for node in agent.promptChain:
         task.logs.append(f"{node.name}: Running")
-        task.logs.append("Data: " + str(context))
+        
+        asyncio.create_task(fire_webhook(task))
 
         if node.type == "prompt":
             llm_response = await handle_prompt_node(node, context)
             task.logs.append("Response: " + llm_response)
 
+            if isinstance(llm_response, Exception):
+                task.set_error()
+                asyncio.create_task(fire_webhook(task))
+                return
+            
+
         if node.type == "return":
             data = handle_return_node(node, context)
             task.output = data
+            task.set_complete()
             
 
         # Fire Notification asynchronously. without await to avoid stalling
