@@ -84,6 +84,9 @@ model Task {
   output         String                               // JSON string
   status         Status
 
+  // callback record
+  callback       String?
+
   agent          Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
 }
 

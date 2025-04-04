@@ -5,6 +5,7 @@ import { runAgent } from "@/utils/server/run-workflow";
 export default async function handler(req, res) {
   const agentId = req.query.agentId;
   const input = req.body.input;
+  const callback = req.body.callback;
 
 
   const agent = await prisma.agent.findUnique({
@@ -51,9 +52,12 @@ export default async function handler(req, res) {
       agentId: agent.id,
       status: response.status,
       logs: JSON.stringify(response.logs),
-      output: JSON.stringify(response.output)
+      output: JSON.stringify(response.output),
+
+      // callback
+      callback: callback
     }
-  })
+  });
 
   res.status(201).json(response);
   return;
