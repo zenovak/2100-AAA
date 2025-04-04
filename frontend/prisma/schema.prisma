@@ -82,6 +82,13 @@ model Task {
 
   logs           String                               // JSON string
   output         String                               // JSON string
+  status         Status
 
   agent          Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+enum Status {
+  running
+  complete
+  error
 }
